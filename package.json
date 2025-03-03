@@ -1,0 +1,26 @@
+{
+  "name": "purwadhika-final-project-template",
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "packageManager": "npm@11.1.0",
+  "scripts": {
+    "build": "npx turbo run build",
+    "check-types": "npx turbo run check-types",
+    "dev": "npx turbo run dev",
+    "lint": "npx turbo run lint",
+    "start": "npx turbo run start",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "eslint": "^9.21.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.3",
+    "turbo": "^2.4.2"
+  }
+}
