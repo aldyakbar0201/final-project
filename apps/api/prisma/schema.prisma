@@ -17,7 +17,7 @@ datasource db {
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
-  BUY_X_GET_Y
+  BUY_1_GET_1
 }
 
 enum OrderStatus {
@@ -29,17 +29,10 @@ enum OrderStatus {
   CANCELLED
 }
 
-enum PaymentMethod {
-  BANK_TRANSFER
-  PAYMENT_GATEWAY
-  CASH_ON_DELIVERY
-}
-
 enum PaymentStatus {
   PENDING
   PAID
   FAILED
-  REFUNDED
 }
 
 model User {
@@ -155,7 +148,7 @@ model Order {
   storeId          String
   addressId        String
   status           OrderStatus
-  paymentMethod    PaymentMethod
+  paymentMethod    String
   paymentStatus    PaymentStatus
   paymentProof     String?
   paymentProofTime DateTime?
@@ -165,12 +158,9 @@ model Order {
   discountTotal    Float         @default(0)
   total            Float
   notes            String?
-  expectedDelivery DateTime?
-  paymentDue       DateTime?
   shippedAt        DateTime?
   deliveredAt      DateTime?
   cancelledAt      DateTime?
-  cancelReason     String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
