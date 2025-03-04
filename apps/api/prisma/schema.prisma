@@ -14,6 +14,34 @@ datasource db {
   directUrl = env("SUPABASE_DIRECT_URL")
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  PAYMENT_GATEWAY
+  CASH_ON_DELIVERY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -22,4 +50,149 @@ model User {
   profileImage String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  Cart         Cart?
+  Order        Order[]
 }
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  price       Float
+  imageUrl    String
+  categoryId  String?
+
+  Category  Category?   @relation(fields: [categoryId], references: [id])
+  Discount  Discount[]
+  CartItem  CartItem[]
+  OrderItem OrderItem[]
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  imageURL    String
+  description String?
+
+  // Relations
+  products Product[]
+}
+
+model Store {
+  id          String   @id @default(uuid())
+  name        String
+  address     String
+  city        String
+  province    String
+  zipCode     String
+  country     String
+  phoneNumber String
+  email       String?
+  latitude    Float
+  longitude   Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discounts Discount[]
+  Order     Order[]
+}
+
+model Discount {
+  id               String       @id @default(uuid())
+  name             String
+  description      String?
+  discountType     DiscountType
+  value            Float
+  minPurchase      Float?
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean      @default(true)
+  productId        String?
+  storeId          String
+  buyQuantity      Int? // For "buy X get Y" type promotions
+  getQuantity      Int? // For "buy X get Y" type promotions
+  maxDiscountValue Float? // Maximum discount value for percentage discounts
+  createdAt        DateTime     @default(now())
+
+  // Relations
+  product Product? @relation(fields: [productId], references: [id])
+  store   Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+
+
+/* ------------------------------------ CART ----------------------------------- */
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+/* ------------------------------------ - ----------------------------------- */
+
+/* ------------------------------------ ORDER ----------------------------------- */
+model Order {
+  id               String        @id @default(uuid())
+  userId           String
+  orderNumber      String        @unique
+  storeId          String
+  addressId        String
+  status           OrderStatus
+  paymentMethod    PaymentMethod
+  paymentStatus    PaymentStatus
+  paymentProof     String?
+  paymentProofTime DateTime?
+  shippingMethod   String
+  shippingCost     Float
+  subtotal         Float
+  discountTotal    Float         @default(0)
+  total            Float
+  notes            String?
+  expectedDelivery DateTime?
+  paymentDue       DateTime?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+  cancelReason     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  user  User        @relation(fields: [userId], references: [id])
+  store Store       @relation(fields: [storeId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  orderId        String
+  productId      String
+  quantity       Int
+  price          Float
+  discountAmount Float    @default(0)
+  subtotal       Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+/* ------------------------------------ - ----------------------------------- */

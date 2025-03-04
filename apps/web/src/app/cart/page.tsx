@@ -48,7 +48,7 @@ export default function Cart() {
                 onClick={handleMinus}
                 className="h-8 w-8 rounded-full bg-lime-600 text-black"
               >{`<`}</button>
-              <h2>{order}</h2>
+              <h2 className="w-10 p-1 justify-center flex">{order}</h2>
               <button
                 onClick={handlePlus}
                 className="h-8 w-8 rounded-full bg-lime-600 text-black"
