@@ -14,11 +14,141 @@ datasource db {
   directUrl = env("SUPABASE_DIRECT_URL")
 }
 
+
+// Tabel User
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STORE_ADMIN) // Role: SUPER_ADMIN atau STORE_ADMIN
+  storeId   Int?     // Hanya untuk STORE_ADMIN
+  store     Store?   @relation(fields: [storeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Tabel Toko
+model Store {
+  id        Int           @id @default(autoincrement())
+  name      String
+  address   String
+  users     User[]
+  products  Product[]
+  stocks    Stock[]
+  discounts Discount[]
+  salesReports SalesReport[] // Relasi balik ke SalesReport
+  stockReports StockReport[] // Relasi balik ke StockReport
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+// Tabel Produk
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  description String
+  price       Float
+  categoryId  Int
+  category    Category      @relation(fields: [categoryId], references: [id])
+  storeId     Int
+  store       Store         @relation(fields: [storeId], references: [id])
+  images      String[]      // Array URL gambar
+  stocks      Stock[]
+  discounts   Discount[]
+  salesReports SalesReport[] // Relasi balik ke SalesReport
+  stockReports StockReport[] // Relasi balik ke StockReport
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// Tabel Kategori Produk
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  products  Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Tabel Stok
+model Stock {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  storeId     Int
+  store       Store    @relation(fields: [storeId], references: [id])
+  quantity    Int
+  stockLogs   StockLog[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Tabel Log Perubahan Stok
+model StockLog {
+  id        Int      @id @default(autoincrement())
+  stockId   Int
+  stock     Stock    @relation(fields: [stockId], references: [id])
+  change    Int      // Perubahan stok (bisa positif atau negatif)
+  reason    String   // Alasan perubahan stok
+  createdAt DateTime @default(now())
+}
+
+// Tabel Diskon
+model Discount {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  storeId     Int
+  store       Store    @relation(fields: [storeId], references: [id])
+  type        DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
+  value       Float    // Nilai diskon (persentase atau nominal)
+  minPurchase Float?   // Minimal pembelian untuk diskon
+  buyOneGetOne Boolean @default(false) // Diskon beli satu gratis satu
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Tabel Laporan Penjualan
+model SalesReport {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  total     Float
+  date      DateTime // Tanggal penjualan
+  createdAt DateTime @default(now())
+}
+
+// Tabel Laporan Stok
+model StockReport {
+  id        Int      @id @default(autoincrement())
+  storeId   Int
+  store     Store    @relation(fields: [storeId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  startStock Int     // Stok awal bulan
+  endStock   Int     // Stok akhir bulan
+  totalAdded Int     // Total penambahan stok
+  totalReduced Int   // Total pengurangan stok
+  month     Int      // Bulan laporan
+  year      Int      // Tahun laporan
+  createdAt DateTime @default(now())
+}
+
+// Enum untuk Role User
+enum Role {
+  SUPER_ADMIN
+  STORE_ADMIN
+}
+
+// Enum untuk Tipe Diskon
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
-  BUY_X_GET_Y
-}
+
 
 enum OrderStatus {
   PENDING_PAYMENT
@@ -32,7 +162,6 @@ enum OrderStatus {
 enum PaymentMethod {
   BANK_TRANSFER
   PAYMENT_GATEWAY
-  CASH_ON_DELIVERY
 }
 
 enum PaymentStatus {
@@ -41,86 +170,6 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
-
-model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  password     String
-  profileImage String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  Cart         Cart?
-  Order        Order[]
-}
-
-model Product {
-  id          String  @id @default(uuid())
-  name        String  @unique
-  description String
-  price       Float
-  imageUrl    String
-  categoryId  String?
-
-  Category  Category?   @relation(fields: [categoryId], references: [id])
-  Discount  Discount[]
-  CartItem  CartItem[]
-  OrderItem OrderItem[]
-}
-
-model Category {
-  id          String  @id @default(uuid())
-  name        String  @unique
-  imageURL    String
-  description String?
-
-  // Relations
-  products Product[]
-}
-
-model Store {
-  id          String   @id @default(uuid())
-  name        String
-  address     String
-  city        String
-  province    String
-  zipCode     String
-  country     String
-  phoneNumber String
-  email       String?
-  latitude    Float
-  longitude   Float
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  discounts Discount[]
-  Order     Order[]
-}
-
-model Discount {
-  id               String       @id @default(uuid())
-  name             String
-  description      String?
-  discountType     DiscountType
-  value            Float
-  minPurchase      Float?
-  startDate        DateTime
-  endDate          DateTime
-  isActive         Boolean      @default(true)
-  productId        String?
-  storeId          String
-  buyQuantity      Int? // For "buy X get Y" type promotions
-  getQuantity      Int? // For "buy X get Y" type promotions
-  maxDiscountValue Float? // Maximum discount value for percentage discounts
-  createdAt        DateTime     @default(now())
-
-  // Relations
-  product Product? @relation(fields: [productId], references: [id])
-  store   Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-}
-
-
 
 /* ------------------------------------ CART ----------------------------------- */
 model Cart {
@@ -194,5 +243,6 @@ model OrderItem {
   // Relations
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+
 }
 /* ------------------------------------ - ----------------------------------- */
