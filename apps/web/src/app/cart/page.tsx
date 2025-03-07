@@ -10,19 +10,24 @@ export default function Cart() {
   const [erase, setErase] = useState(false);
 
   function handlePlus() {
-    // const priceCatchUp = price + 1
     setOrder(order + 1);
-    setPrice(order * 1000);
+    setPrice((order + 1) * 1000);
   }
 
   function handleMinus() {
     if (order > 1) {
       setOrder(order - 1);
-      setPrice(order * 1000);
+      setPrice((order - 1) * 1000);
     } else {
       if (confirm('Are you sure to delete this product?')) {
         setErase(!erase);
       }
+    }
+  }
+
+  function handleErase() {
+    if (confirm('Are you sure to delete this product?')) {
+      setErase(!erase);
     }
   }
 
@@ -47,8 +52,8 @@ export default function Cart() {
             />
             {/* product details */}
             <div className="flex flex-col text-start sm:text-left">
-              <h2 className="text-lg font-semibold">Product Name</h2>
-              <p className="text-sm text-gray-600">descriptions</p>
+              <h2 className="text-lg font-semibold">Tomatos</h2>
+              <p className="text-sm text-gray-600">x2</p>
               <div className="flex items-center mt-2">
                 <button
                   onClick={handleMinus}
@@ -71,9 +76,7 @@ export default function Cart() {
             <div className="flex flex-col items-end justify-end">
               <span
                 className="text-xl relative top-0 cursor-pointer"
-                onClick={() => {
-                  setErase(!erase);
-                }}
+                onClick={handleErase}
               >
                 x
               </span>
