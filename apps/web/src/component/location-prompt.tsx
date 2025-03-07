@@ -1,12 +1,59 @@
-interface LocationPromptProps {
-  message: string;
-}
+// components/location-prompt.tsx
+'use client';
 
-export default function LocationPrompt({ message }: LocationPromptProps) {
+import { useEffect, useState } from 'react';
+
+const LocationPrompt = () => {
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationAddress, setLocationAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            );
+            const data = await response.json();
+            if (data.address) {
+              const district =
+                data.address.suburb || data.address.village || '';
+              const city =
+                data.address.city ||
+                data.address.town ||
+                data.address.county ||
+                '';
+              setLocationAddress(`${district}, ${city}`.trim());
+            } else {
+              setLocationAddress('Location not found');
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        },
+        (error) => {
+          setLocationError(error.message);
+        },
+      );
+    } else {
+      setLocationError('Geolocation is not supported by this browser.');
+    }
+  }, []);
+
   return (
-    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-8">
-      <p className="font-bold">Location Information</p>
-      <p>{message}</p>
-    </div>
+    <section className="bg-white p-8 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4">Your Location</h2>
+      {locationError ? (
+        <p className="text-red-500">{locationError}</p>
+      ) : (
+        <p className="text-gray-700">
+          {locationAddress || 'Fetching location...'}
+        </p>
+      )}
+    </section>
   );
-}
+};
+
+export default LocationPrompt;

@@ -1,69 +1,57 @@
-'use client';
+// components/product-list.tsx
+import Image from 'next/image';
+import React from 'react';
 
-import { useState, useEffect } from 'react';
-import ProductCard from './product-card';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-}
-
-interface ProductListProps {
-  userLocation: GeolocationCoordinates | null;
-}
-
-export default function ProductList({ userLocation }: ProductListProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulating an API call with a delay
-    const fetchProducts = async () => {
-      setLoading(true);
-      // TODO: Replace this with actual API call using userLocation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProducts([
-        {
-          id: 1,
-          name: 'Apples',
-          price: 1.99,
-          image: '/placeholder.svg?height=200&width=200',
-        },
-        {
-          id: 2,
-          name: 'Bananas',
-          price: 0.99,
-          image: '/placeholder.svg?height=200&width=200',
-        },
-        {
-          id: 3,
-          name: 'Milk',
-          price: 2.49,
-          image: '/placeholder.svg?height=200&width=200',
-        },
-      ]);
-      setLoading(false);
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) {
-    return <div className="text-center">Loading products...</div>;
-  }
-
+const ProductList = () => {
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">
-        {userLocation ? 'Products Near You' : 'Featured Products'}
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+    <section className="py-12">
+      <div className="container mx-auto">
+        <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="relative w-full h-48">
+              <Image
+                src="/apple.jpg"
+                alt="Product 1"
+                fill
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
+            </div>
+
+            <h3 className="text-xl font-bold mt-4">Product 1</h3>
+            <p className="text-gray-600">Description of Product 1</p>
+            <p className="text-green-600 font-bold mt-2">$10.00</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="relative w-full h-48">
+              <Image
+                src="/banana.jpg"
+                alt="Product 1"
+                fill
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
+            </div>
+            <h3 className="text-xl font-bold mt-4">Product 2</h3>
+            <p className="text-gray-600">Description of Product 2</p>
+            <p className="text-green-600 font-bold mt-2">$15.00</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="relative w-full h-48">
+              <Image
+                src="/milk.jpg"
+                alt="Product 1"
+                fill
+                className="w-full h-48 object-cover rounded-t-lg"
+              />
+            </div>
+            <h3 className="text-xl font-bold mt-4">Product 3</h3>
+            <p className="text-gray-600">Description of Product 3</p>
+            <p className="text-green-600 font-bold mt-2">$20.00</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
-}
+};
+
+export default ProductList;

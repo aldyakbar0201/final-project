@@ -14,7 +14,6 @@ datasource db {
   directUrl = env("SUPABASE_DIRECT_URL")
 }
 
-
 // Tabel User
 model User {
   id        Int      @id @default(autoincrement())
@@ -22,66 +21,71 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(STORE_ADMIN) // Role: SUPER_ADMIN atau STORE_ADMIN
-  storeId   Int?     // Hanya untuk STORE_ADMIN
+  storeId   Int? // Hanya untuk STORE_ADMIN
   store     Store?   @relation(fields: [storeId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Cart      Cart?
+  Order     Order[]
 }
 
 // Tabel Toko
 model Store {
-  id        Int           @id @default(autoincrement())
-  name      String
-  address   String
-  users     User[]
-  products  Product[]
-  stocks    Stock[]
-  discounts Discount[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  address      String
+  users        User[]
+  products     Product[]
+  stocks       Stock[]
+  discounts    Discount[]
   salesReports SalesReport[] // Relasi balik ke SalesReport
   stockReports StockReport[] // Relasi balik ke StockReport
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  Order        Order[]
 }
 
 // Tabel Produk
 model Product {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  description String
-  price       Float
-  categoryId  Int
-  category    Category      @relation(fields: [categoryId], references: [id])
-  storeId     Int
-  store       Store         @relation(fields: [storeId], references: [id])
-  images      String[]      // Array URL gambar
-  stocks      Stock[]
-  discounts   Discount[]
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  description  String
+  price        Float
+  categoryId   Int
+  category     Category      @relation(fields: [categoryId], references: [id])
+  storeId      Int
+  store        Store         @relation(fields: [storeId], references: [id])
+  images       String[] // Array URL gambar
+  stocks       Stock[]
+  discounts    Discount[]
   salesReports SalesReport[] // Relasi balik ke SalesReport
   stockReports StockReport[] // Relasi balik ke StockReport
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  CartItem     CartItem[]
+  OrderItem    OrderItem[]
 }
 
 // Tabel Kategori Produk
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
   products  Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 // Tabel Stok
 model Stock {
-  id          Int      @id @default(autoincrement())
-  productId   Int
-  product     Product  @relation(fields: [productId], references: [id])
-  storeId     Int
-  store       Store    @relation(fields: [storeId], references: [id])
-  quantity    Int
-  stockLogs   StockLog[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int        @id @default(autoincrement())
+  productId Int
+  product   Product    @relation(fields: [productId], references: [id])
+  storeId   Int
+  store     Store      @relation(fields: [storeId], references: [id])
+  quantity  Int
+  stockLogs StockLog[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 // Tabel Log Perubahan Stok
@@ -89,24 +93,24 @@ model StockLog {
   id        Int      @id @default(autoincrement())
   stockId   Int
   stock     Stock    @relation(fields: [stockId], references: [id])
-  change    Int      // Perubahan stok (bisa positif atau negatif)
-  reason    String   // Alasan perubahan stok
+  change    Int // Perubahan stok (bisa positif atau negatif)
+  reason    String // Alasan perubahan stok
   createdAt DateTime @default(now())
 }
 
 // Tabel Diskon
 model Discount {
-  id          Int      @id @default(autoincrement())
-  productId   Int
-  product     Product  @relation(fields: [productId], references: [id])
-  storeId     Int
-  store       Store    @relation(fields: [storeId], references: [id])
-  type        DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
-  value       Float    // Nilai diskon (persentase atau nominal)
-  minPurchase Float?   // Minimal pembelian untuk diskon
-  buyOneGetOne Boolean @default(false) // Diskon beli satu gratis satu
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int          @id @default(autoincrement())
+  productId    Int
+  product      Product      @relation(fields: [productId], references: [id])
+  storeId      Int
+  store        Store        @relation(fields: [storeId], references: [id])
+  type         DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
+  value        Float // Nilai diskon (persentase atau nominal)
+  minPurchase  Float? // Minimal pembelian untuk diskon
+  buyOneGetOne Boolean      @default(false) // Diskon beli satu gratis satu
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
 
 // Tabel Laporan Penjualan
@@ -124,18 +128,18 @@ model SalesReport {
 
 // Tabel Laporan Stok
 model StockReport {
-  id        Int      @id @default(autoincrement())
-  storeId   Int
-  store     Store    @relation(fields: [storeId], references: [id])
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  startStock Int     // Stok awal bulan
-  endStock   Int     // Stok akhir bulan
-  totalAdded Int     // Total penambahan stok
-  totalReduced Int   // Total pengurangan stok
-  month     Int      // Bulan laporan
-  year      Int      // Tahun laporan
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  storeId      Int
+  store        Store    @relation(fields: [storeId], references: [id])
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+  startStock   Int // Stok awal bulan
+  endStock     Int // Stok akhir bulan
+  totalAdded   Int // Total penambahan stok
+  totalReduced Int // Total pengurangan stok
+  month        Int // Bulan laporan
+  year         Int // Tahun laporan
+  createdAt    DateTime @default(now())
 }
 
 // Enum untuk Role User
@@ -148,7 +152,7 @@ enum Role {
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
-
+}
 
 enum OrderStatus {
   PENDING_PAYMENT
@@ -171,7 +175,9 @@ enum PaymentStatus {
   REFUNDED
 }
 
-/* ------------------------------------ CART ----------------------------------- */
+/**
+ * ------------------------------------ CART -----------------------------------
+ */
 model Cart {
   id        String   @id @default(uuid())
   userId    String   @unique
@@ -194,9 +200,14 @@ model CartItem {
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
-/* ------------------------------------ - ----------------------------------- */
 
-/* ------------------------------------ ORDER ----------------------------------- */
+/**
+ * ------------------------------------ - -----------------------------------
+ */
+
+/**
+ * ------------------------------------ ORDER -----------------------------------
+ */
 model Order {
   id               String        @id @default(uuid())
   userId           String
@@ -243,6 +254,8 @@ model OrderItem {
   // Relations
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
-
 }
-/* ------------------------------------ - ----------------------------------- */
+
+/**
+ * ------------------------------------ - -----------------------------------
+ */
