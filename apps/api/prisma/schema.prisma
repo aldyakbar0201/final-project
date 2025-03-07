@@ -14,10 +14,16 @@ datasource db {
   directUrl = env("SUPABASE_DIRECT_URL")
 }
 
+// Enum untuk Role User
+enum Role {
+  SUPER_ADMIN
+  STORE_ADMIN
+}
+
+// Enum untuk Tipe Diskon
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
-  BUY_1_GET_1
 }
 
 enum OrderStatus {
@@ -27,6 +33,11 @@ enum OrderStatus {
   DELIVERED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  PAYMENT_GATEWAY
 }
 
 enum PaymentStatus {
@@ -116,6 +127,8 @@ model Discount {
 /**
  * ------------------------------------ CART -----------------------------------
  */
+
+/* ------------------------------------ CART ----------------------------------- */
 model Cart {
   id        Int      @id @default(autoincrement())
   userId    String   @unique
@@ -190,7 +203,4 @@ model OrderItem {
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 }
-
-/**
- * ------------------------------------ - -----------------------------------
- */
+/* ------------------------------------ - ----------------------------------- */
