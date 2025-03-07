@@ -4,78 +4,101 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-//yang agak bingung nanti pasti jumlahnya harus nyambung sama backendnya (databasenya) itu nanti gimana?
-
 export default function Cart() {
   const [order, setOrder] = useState(1);
+  const [price, setPrice] = useState(0);
+  const [erase, setErase] = useState(false);
 
   function handlePlus() {
-    return setOrder(order + 1);
+    // const priceCatchUp = price + 1
+    setOrder(order + 1);
+    setPrice(order * 1000);
   }
 
   function handleMinus() {
-    if (order === 1) {
-      confirm('Are you sure to delete this product?');
+    if (order > 1) {
+      setOrder(order - 1);
+      setPrice(order * 1000);
+    } else {
+      if (confirm('Are you sure to delete this product?')) {
+        setErase(!erase);
+      }
     }
-
-    return setOrder(order - 1);
   }
 
   return (
-    <>
-      <section className="m-20 gap-5">
-        <h1 className="mb-10 text-5xl">Cart</h1>
+    <section className="m-5 md:m-10 lg:m-20">
+      <h1 className="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold">Cart</h1>
 
-        <div className="flex gap-8">
-          {/* PRODUCT CARD */}
-          <div className="mr-5 flex w-full items-center justify-between border-2 border-lime-600 p-5 px-10">
-            <div className="flex items-center gap-10">
-              <Image
-                src={'/file.svg'}
-                width={100}
-                height={100}
-                alt="dummy product"
-              />
-              <div className="flex flex-col gap-2">
-                <h2 className="">Product Name</h2>
-                <p>
-                  descriptions <Link href={'/'}>see more</Link>
-                </p>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* PRODUCT CARD */}
+        <div
+          className={`${erase ? 'hidden' : 'flex'} w-full border-2 border-lime-600 p-5 flex-col md:flex-row md:items-center md:justify-between gap-4`}
+        >
+          <div
+            className={`flex sm:flex-row items-center gap-4 sm:gap-10 ${erase ? 'hidden' : 'block'}`}
+          >
+            {/* Image */}
+            <Image
+              src={'/file.svg'}
+              width={70}
+              height={70}
+              alt="dummy product"
+            />
+            {/* product details */}
+            <div className="flex flex-col text-start sm:text-left">
+              <h2 className="text-lg font-semibold">Product Name</h2>
+              <p className="text-sm text-gray-600">descriptions</p>
+              <div className="flex items-center mt-2">
+                <button
+                  onClick={handleMinus}
+                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
+                >
+                  -
+                </button>
+                <h2 className="w-12 text-center text-lg font-semibold">
+                  {order}
+                </h2>
+                <button
+                  onClick={handlePlus}
+                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
+                >
+                  +
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleMinus}
-                className="h-8 w-8 rounded-full bg-lime-600 text-black"
-              >{`<`}</button>
-              <h2 className="w-10 p-1 justify-center flex">{order}</h2>
-              <button
-                onClick={handlePlus}
-                className="h-8 w-8 rounded-full bg-lime-600 text-black"
-              >{`>`}</button>
-            </div>
-          </div>
-
-          {/* TOTAL CARD */}
-          <div className="relative w-[550px]">
-            <h2 className="mb-2 text-3xl">Bill</h2>
-            <div className="flex flex-col justify-between gap-10 border-2 border-lime-600 p-2">
-              <div className="flex justify-between">
-                <p>Product Name</p>
-                <p>{`x ${order}`}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
+            {/* Price */}
+            <div className="flex flex-col items-end justify-end">
+              <span
+                className="text-xl relative top-0 cursor-pointer"
+                onClick={() => {
+                  setErase(!erase);
                 }}
-                className="rounded-md bg-lime-600 p-3 text-black"
               >
-                Ceckout
-              </button>
+                x
+              </span>
+              <p className="text-lg font-semibold">{`Rp${price}`}</p>
             </div>
           </div>
         </div>
-      </section>
-    </>
+
+        {/* TOTAL CARD */}
+        <div className="w-full lg:w-[400px] border-2 border-lime-600 p-4">
+          <h2 className="text-2xl font-semibold mb-2">Bill</h2>
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between text-lg">
+              <p>Product Name</p>
+              <p>{`x ${order}`}</p>
+            </div>
+            <button
+              onClick={(e) => e.preventDefault()}
+              className="w-full bg-lime-600 text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition"
+            >
+              <Link href={'/order'}>Checkout</Link>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

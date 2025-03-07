@@ -48,7 +48,7 @@ model User {
 }
 
 model Product {
-  id          String  @id @default(uuid())
+  id          Int  @id @default(autoincrement())
   name        String  @unique
   description String
   price       Float
@@ -101,7 +101,7 @@ model Discount {
   startDate        DateTime
   endDate          DateTime
   isActive         Boolean      @default(true)
-  productId        String?
+  productId        Int?
   storeId          String
   buyQuantity      Int? // For "buy X get Y" type promotions
   getQuantity      Int? // For "buy X get Y" type promotions
@@ -113,11 +113,11 @@ model Discount {
   store   Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
-
-
-/* ------------------------------------ CART ----------------------------------- */
+/**
+ * ------------------------------------ CART -----------------------------------
+ */
 model Cart {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   userId    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,19 +128,24 @@ model Cart {
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String
-  productId String
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  Cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
-/* ------------------------------------ - ----------------------------------- */
 
-/* ------------------------------------ ORDER ----------------------------------- */
+/**
+ * ------------------------------------ - -----------------------------------
+ */
+
+/**
+ * ------------------------------------ ORDER -----------------------------------
+ */
 model Order {
   id               String        @id @default(uuid())
   userId           String
@@ -173,7 +178,7 @@ model Order {
 model OrderItem {
   id             String   @id @default(uuid())
   orderId        String
-  productId      String
+  productId      Int
   quantity       Int
   price          Float
   discountAmount Float    @default(0)
@@ -185,4 +190,7 @@ model OrderItem {
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 }
-/* ------------------------------------ - ----------------------------------- */
+
+/**
+ * ------------------------------------ - -----------------------------------
+ */
