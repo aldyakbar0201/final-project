@@ -18,6 +18,7 @@ datasource db {
 enum Role {
   SUPER_ADMIN
   STORE_ADMIN
+  CUSTOMER
 }
 
 // Enum untuk Tipe Diskon
@@ -48,17 +49,31 @@ enum PaymentStatus {
 
 // Tabel User
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STORE_ADMIN) // Role: SUPER_ADMIN atau STORE_ADMIN
-  storeId   Int? // Hanya untuk STORE_ADMIN
-  store     Store?   @relation(fields: [storeId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Cart      Cart?
-  Order     Order[]
+  id             Int            @id @default(autoincrement())
+  name           String
+  email          String         @unique
+  emailConfirmed Boolean        @default(false)
+  password       String
+  role           Role?
+  userPhoto      String?
+  storeId        Int? // Hanya untuk STORE_ADMIN
+  store          Store?         @relation(fields: [storeId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  Cart           Cart?
+  Order          Order[]
+  ConfirmToken   ConfirmToken[]
+}
+
+// Tabel ConfirmToken
+model ConfirmToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  token       String
+  expiredDate DateTime
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Tabel Toko
@@ -174,46 +189,12 @@ model StockReport {
   createdAt    DateTime @default(now())
 }
 
-
-// Enum untuk Role User
-enum Role {
-  SUPER_ADMIN
-  STORE_ADMIN
-}
-
-// Enum untuk Tipe Diskon
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
-
-enum OrderStatus {
-  PENDING_PAYMENT
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentMethod {
-  BANK_TRANSFER
-  PAYMENT_GATEWAY
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-}
-
 /**
  * ------------------------------------ CART -----------------------------------
  */
 model Cart {
   id        Int      @id @default(autoincrement())
-  userId    Int   @unique
+  userId    Int      @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

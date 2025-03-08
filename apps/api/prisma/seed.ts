@@ -1,6 +1,8 @@
-import { hash, genSalt } from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
 import { prisma } from '../src/configs/prisma.js';
+
+const { genSalt, hash } = bcrypt;
 
 async function main() {
   try {
@@ -43,4 +45,11 @@ async function main() {
   }
 }
 
-main();
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
