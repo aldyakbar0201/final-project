@@ -18,11 +18,11 @@ export default function Order() {
             {/* PRODUCT MAIN */}
             <div className="flex gap-3">
               <Image
-                src={'/vercel.svg'}
+                src={'/home.svg'}
                 width={100}
                 height={100}
                 alt="dummy product image"
-                className="bg-black p-3"
+                className="bg-white p-3"
               />
               <div>
                 <p className="text-2xl font-bold">
