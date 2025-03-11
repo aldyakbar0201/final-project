@@ -12,12 +12,26 @@ export default function Checkout() {
     if (mapRef.current || !mapContainerRef.current) return; // Prevent multiple initializations
 
     // Initialize the map
-    const map = L.map(mapContainerRef.current).setView([51.505, -0.09], 13);
+    const map = L.map(mapContainerRef.current).setView([0.7893, 113.9213], 5);
     mapRef.current = map; // Store map instance
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(map);
+    L.tileLayer(
+      'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.jpg?key=SWVeTZR6GukfS4d2jhKd',
+      {
+        attribution: '© OpenStreetMap contributors ',
+      },
+    ).addTo(map);
+
+    const leafletIcon = L.icon({
+      iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-green.png',
+      iconSize: [38, 95],
+      iconAnchor: [22, 94],
+      popupAnchor: [-3, -76],
+      shadowAnchor: [6, 63],
+      shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+    });
+
+    L.marker([0.7893, 113.9213], { icon: leafletIcon }).addTo(map);
 
     setTimeout(() => {
       map.invalidateSize();
@@ -30,7 +44,7 @@ export default function Checkout() {
   }, []);
 
   return (
-    <section className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+    <section className="max-w-md mx-auto bg-white rounded-lg shadow-md pt-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b">
         Order Summary
       </h2>
@@ -58,7 +72,7 @@ export default function Checkout() {
 
         <div className="flex justify-between items-center py-2">
           <span className="text-gray-600 font-medium">Voucher:</span>
-          <span className="text-gray-800">Pick discount</span>
+          <span className="text-gray-800">Pick Voucher</span>
         </div>
 
         <div className="flex justify-between items-center py-2 border-b pb-4">
