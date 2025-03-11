@@ -1,4 +1,4 @@
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart, User, ZoomIn } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -9,6 +9,10 @@ export default function Navbar() {
           Online Grocery
         </Link>
         <div className="flex items-center space-x-4">
+          <Link href="/explore" className="flex items-center">
+            <ZoomIn className="w-6 h-6 mr-1" />
+            <span className="sr-only">Explore</span>
+          </Link>
           <Link href="/cart" className="flex items-center">
             <ShoppingCart className="w-6 h-6 mr-1" />
             <span className="sr-only">Cart</span>
