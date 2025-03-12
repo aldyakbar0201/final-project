@@ -1,5 +1,5 @@
 'use client';
-
+//tinggal di connect ke backend
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -97,7 +97,7 @@ export default function Cart() {
               onClick={(e) => e.preventDefault()}
               className="w-full bg-lime-600 text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition"
             >
-              <Link href={'/order'}>Checkout</Link>
+              <Link href={'/checkout'}>Checkout</Link>
             </button>
           </div>
         </div>
