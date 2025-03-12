@@ -29,11 +29,11 @@ export default function ProductDetail() {
       </div>
 
       {/* Product Image */}
-      <div className="bg-gray-100 p-4 rounded-xl">
+      <div className="bg-gray-100 p-4 rounded-xl flex justify-center items-center">
         <img
           src="/apple.jpg"
-          alt="Naturel Red Apple"
-          className="w-full rounded-lg"
+          alt="Natural Red Apple"
+          className="w-64 h-64 object-cover rounded-lg" // Ukuran gambar diperkecil
         />
       </div>
 
@@ -41,7 +41,7 @@ export default function ProductDetail() {
       <div className="mt-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold">Naturel Red Apple</h1>
+            <h1 className="text-2xl font-bold">Natural Red Apple</h1>
             <p className="text-gray-500">1kg, Price</p>
           </div>
           <button>
