@@ -9,7 +9,7 @@ export default function HeroSection() {
         fill
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
+      <div className="absolute inset-0 backdrop-brightness-75 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white mb-4">
             Welcome to Online Grocery
