@@ -17,7 +17,7 @@ export default function Navbar() {
             <ShoppingCart className="w-6 h-6 mr-1" />
             <span className="sr-only">Cart</span>
           </Link>
-          <Link href="/profile" className="flex items-center">
+          <Link href="/user-profile" className="flex items-center">
             <User className="w-6 h-6 mr-1" />
             <span className="sr-only">Profile</span>
           </Link>

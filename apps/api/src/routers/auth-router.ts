@@ -11,6 +11,6 @@ const router = express.Router();
 router.route('/register').post(register);
 router.route('/login').post(login);
 router.route('/logout').post(logout);
-router.route('/confirm-email').post(confirmEmail);
+router.route('/confirm-email').get(confirmEmail);
 
 export default router;

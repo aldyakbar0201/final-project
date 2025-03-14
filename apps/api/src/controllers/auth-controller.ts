@@ -27,12 +27,12 @@ export async function register(
       return;
     }
 
-    const existingUser = await prisma.user.findFirst({
-      where: { email: email },
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
     });
 
     if (existingUser) {
-      res.status(400).json({ message: 'Email or username has already taken' });
+      res.status(400).json({ message: 'Email has already taken' });
       return;
     }
 
@@ -68,7 +68,7 @@ export async function register(
       link: confirmationLink,
     });
     const { data, error } = await resend.emails.send({
-      from: 'Fresh Basket <onboarding@resend.dev>',
+      from: 'Fresh Basket <purwafinalproject@gmail.com>',
       to: email,
       subject: 'Welcome to Fresh Basket',
       html: htmlTemplate,
@@ -79,7 +79,7 @@ export async function register(
       return;
     }
 
-    res.status(201).json({ ok: true, message: 'New user added' });
+    res.status(201).json({ ok: true, message: 'Register Completed' });
   } catch (error) {
     next(error);
   }
