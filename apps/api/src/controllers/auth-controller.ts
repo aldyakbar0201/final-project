@@ -27,7 +27,7 @@ export async function register(
       return;
     }
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
 
@@ -131,17 +131,15 @@ export async function confirmEmail(
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { emailOrUsername, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!emailOrUsername || !password) {
+    if (!email || !password) {
       res.status(400).json({ message: 'Missing required fields!' });
       return;
     }
 
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: emailOrUsername }],
-      },
+      where: { email: email },
     });
 
     if (!existingUser) {
