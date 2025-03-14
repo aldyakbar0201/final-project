@@ -7,14 +7,7 @@ export const registerSchema = z.object({
     .max(50, 'Name must be at most 50 characters long')
     .regex(/^[A-Za-z\s]+$/, 'Name can only contain letters and spaces'),
   email: z.string().email('Invalid email format'),
-  password: z
-    .string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(100, 'Password can not exceed 100 characters')
-    .regex(
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character',
-    ),
+  password: z.string(),
   role: z.enum(['CUSTOMER', 'SUPER_ADMIN', 'STORE_ADMIN']),
 });
 
