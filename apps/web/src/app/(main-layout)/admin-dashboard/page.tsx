@@ -1,8 +1,8 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession } from '../../lib/users';
-import AdminNav from '../../component/admin-navbar';
+import { getSession } from '../../../lib/users';
+import AdminNav from '../../../component/admin-navbar';
 
 export default function AdminDashboard() {
   const router = useRouter();

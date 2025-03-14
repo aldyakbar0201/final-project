@@ -2,9 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import InventoryTable from '../../component/inventory-table';
-import StoreSelector from '../../component/store-selector';
-import { Product, Store } from '../../app/types/inventory';
+import InventoryTable from '../../../component/inventory-table';
+import StoreSelector from '../../../component/store-selector';
+import { Product, Store } from '../../types/inventory';
 
 // Data contoh toko dan produk
 const stores: Store[] = [
