@@ -2,6 +2,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const LocationPrompt = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -31,6 +33,7 @@ const LocationPrompt = () => {
             }
           } catch (error) {
             console.error(error);
+            setLocationError('Failed to fetch location data.');
           }
         },
         (error) => {
@@ -43,14 +46,36 @@ const LocationPrompt = () => {
   }, []);
 
   return (
-    <section className="bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Your Location</h2>
+    <section className="mx-8 mt-10 p-6">
+      <motion.h2
+        className="text-2xl font-bold mb-4 flex items-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FaMapMarkerAlt className="mr-2 text-blue-500" />
+        Your Location
+      </motion.h2>
       {locationError ? (
-        <p className="text-red-500">{locationError}</p>
+        <motion.p
+          className="text-red-500 flex items-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <FaExclamationTriangle className="mr-2 text-red-500" />
+          {locationError}
+        </motion.p>
       ) : (
-        <p className="text-gray-700">
+        <motion.p
+          className="text-gray-700 flex items-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <FaMapMarkerAlt className="mr-2 text-green-500" />
           {locationAddress || 'Fetching location...'}
-        </p>
+        </motion.p>
       )}
     </section>
   );

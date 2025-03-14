@@ -1,9 +1,9 @@
 // UsersPage.tsx
 'use client';
 import { useEffect, useState } from 'react';
-import UserTable from '../../../component/user-table';
-import { fetchUsers } from '../../../lib/users';
-import { User } from '../../../shared/types'; // Impor tipe User yang konsisten
+import UserTable from '../../../../component/user-table';
+import { fetchUsers } from '../../../../lib/users';
+import { User } from '../../../../shared/types'; // Impor tipe User yang konsisten
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]); // ✅ Gunakan tipe User yang konsisten
