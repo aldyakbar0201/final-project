@@ -1,46 +1,72 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { notify } from '@/utils/notify-toast';
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [dob, setDob] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [roles, setRoles] = useState<string[]>();
+  const [formRegister, setFormRegister] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'CUSTOMER',
+  });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const router = useRouter();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    async function getRoles() {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/roles');
+        const roles = await response.json();
+        setRoles(roles.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getRoles();
+  }, []);
+
+  async function handleSubmit() {
     setFieldErrors({});
     setLoading(true);
     try {
-      const formData = {
-        name,
-        dob,
-        email,
-        password,
-      };
-      // Simulate request to server
-      console.log('Registering user:', formData);
+      setLoading(true);
+      const response = await fetch(
+        'http://localhost:8000/api/v1/auth/register',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formRegister),
+        },
+      );
+      if (!response.ok) {
+        return notify('Error!');
+      }
+      notify('Registration successfull!');
+      router.push('/auth/login');
     } catch (error) {
       console.log(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });
     } finally {
+      setFormRegister({
+        name: '',
+        email: '',
+        password: '',
+        role: '',
+      });
       setLoading(false);
-      setName('');
-      setDob('');
-      setEmail('');
-      setPassword('');
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex w-full overflow-hidden rounded-xl">
+    <section className="flex min-h-screen">
+      <div className="flex w-full overflow-hidden">
         {/* Background Image */}
-        <div className="relative w-1/2 h-fullr">
+        <div className="relative w-1/2 h-full">
           <Image
             src="/fruit-1.jpg"
             alt="Fresh groceries"
@@ -51,7 +77,12 @@ export default function Register() {
         {/* Form Container */}
         <div className="w-full md:w-1/2 p-8 my-auto">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">Register</h2>
-          <form onSubmit={handleRegister}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             <div className="mb-4">
               <label
                 htmlFor="name"
@@ -62,8 +93,12 @@ export default function Register() {
               <input
                 type="text"
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formRegister.name}
+                onChange={(e) =>
+                  setFormRegister((prev) => {
+                    return { ...prev, name: e.target.value };
+                  })
+                }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter your name"
                 required
@@ -79,8 +114,12 @@ export default function Register() {
               <input
                 type="email"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formRegister.email}
+                onChange={(e) =>
+                  setFormRegister((prev) => {
+                    return { ...prev, email: e.target.value };
+                  })
+                }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter your email"
                 required
@@ -96,18 +135,52 @@ export default function Register() {
               <input
                 type="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formRegister.password}
+                onChange={(e) =>
+                  setFormRegister((prev) => {
+                    return { ...prev, password: e.target.value };
+                  })
+                }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter your password"
                 required
               />
             </div>
+            <div className="grid grid-cols-[125px_1fr]">
+              <label htmlFor="role">Role</label>
+              <select
+                id="role"
+                defaultValue=""
+                onChange={(e) =>
+                  setFormRegister((prev) => {
+                    return { ...prev, role: e.target.value };
+                  })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Pick a role
+                </option>
+                {roles?.map((item: string, index: number) => {
+                  return (
+                    <option key={index} value={item}>
+                      {item}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
             <button
+              // className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4"
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4"
+              className={`${
+                loading
+                  ? 'border-gray-500 text-gray-500'
+                  : 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4'
+              } border  mt-2 mb-4`}
+              disabled={loading}
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? 'Loading...' : 'Register'}
             </button>
             <div className="flex items-center justify-center mb-4">
               <div className="border-t border-gray-300 w-full mr-4"></div>
@@ -134,7 +207,7 @@ export default function Register() {
           </form>
           <div className="mt-4 text-center">
             <Link
-              href="/user-login"
+              href="/auth/user-login"
               className="text-blue-500 hover:text-blue-700"
             >
               Already have an account? Login
@@ -142,6 +215,6 @@ export default function Register() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

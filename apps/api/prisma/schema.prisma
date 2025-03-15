@@ -54,8 +54,9 @@ model User {
   email          String         @unique
   emailConfirmed Boolean        @default(false)
   password       String
-  role           Role?
+  role           Role           @default(CUSTOMER)
   userPhoto      String?
+  address        String?
   storeId        Int? // Hanya untuk STORE_ADMIN
   store          Store?         @relation(fields: [storeId], references: [id])
   createdAt      DateTime       @default(now())
@@ -78,7 +79,7 @@ model ConfirmToken {
 
 /**
  * ------------------------------------ STORE -----------------------------------
- */ 
+ */
 
 // Tabel Toko
 model Store {

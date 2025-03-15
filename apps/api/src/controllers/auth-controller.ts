@@ -68,7 +68,7 @@ export async function register(
       link: confirmationLink,
     });
     const { data, error } = await resend.emails.send({
-      from: 'Fresh Basket <purwafinalproject@gmail.com>',
+      from: 'Fresh Basket <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome to Fresh Basket',
       html: htmlTemplate,

@@ -6,7 +6,7 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
-          Online Grocery
+          Freshbasket
         </Link>
         <div className="flex items-center space-x-4">
           <Link href="/explore" className="flex items-center">

@@ -1,38 +1,48 @@
 'use client';
+import { notify } from '@/utils/notify-toast';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Register() {
-  const [dob, setDob] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formLogin, setFormLogin] = useState({
+    email: '',
+    password: '',
+  });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const router = useRouter();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function handleRegister() {
     setFieldErrors({});
     setLoading(true);
     try {
-      const formData = {
-        name,
-        dob,
-        email,
-        password,
-      };
-      // Simulate request to server
-      console.log('Registering user:', formData);
+      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formLogin),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return notify(errorData.message || 'Error login!');
+      }
+      notify('Login successfull');
+      router.push('/');
     } catch (error) {
       console.log(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });
     } finally {
+      setFormLogin({
+        email: '',
+        password: '',
+      });
       setLoading(false);
-      setDob('');
-      setEmail('');
-      setPassword('');
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -50,8 +60,11 @@ export default function Register() {
               <input
                 type="email"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setFormLogin((prev) => {
+                    return { ...prev, emailOrUsername: e.target.value };
+                  })
+                }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter your email"
                 required
@@ -67,8 +80,12 @@ export default function Register() {
               <input
                 type="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formLogin.password}
+                onChange={(e) =>
+                  setFormLogin((prev) => {
+                    return { ...prev, password: e.target.value };
+                  })
+                }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter your password"
                 required
