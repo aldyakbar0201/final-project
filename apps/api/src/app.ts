@@ -1,7 +1,7 @@
 import './configs/env.js';
+import cors from 'cors';
 
 import express, { Application, Request, Response } from 'express';
-
 import { notFoundMiddleware } from './middlewares/not-found.middleware.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import authRouter from './routers/auth-router.js';
@@ -9,6 +9,8 @@ import roleRouter from './routers/role-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
+
+app.use(cors({ origin: 'http://localhost:3000', credentials: true })); //origin: frshbasket.shop
 
 app.use(express.json());
 

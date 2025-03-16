@@ -1,34 +1,19 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { notify } from '@/utils/notify-toast';
 
 export default function Register() {
-  const [roles, setRoles] = useState<string[]>();
   const [formRegister, setFormRegister] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'CUSTOMER',
   });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const router = useRouter();
-
-  useEffect(() => {
-    async function getRoles() {
-      try {
-        const response = await fetch('http://localhost:8000/api/v1/roles');
-        const roles = await response.json();
-        setRoles(roles.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    getRoles();
-  }, []);
 
   async function handleSubmit() {
     setFieldErrors({});
@@ -56,7 +41,6 @@ export default function Register() {
         name: '',
         email: '',
         password: '',
-        role: '',
       });
       setLoading(false);
     }
@@ -145,30 +129,6 @@ export default function Register() {
                 placeholder="Enter your password"
                 required
               />
-            </div>
-            <div className="grid grid-cols-[125px_1fr]">
-              <label htmlFor="role">Role</label>
-              <select
-                id="role"
-                defaultValue=""
-                onChange={(e) =>
-                  setFormRegister((prev) => {
-                    return { ...prev, role: e.target.value };
-                  })
-                }
-                required
-              >
-                <option value="" disabled>
-                  Pick a role
-                </option>
-                {roles?.map((item: string, index: number) => {
-                  return (
-                    <option key={index} value={item}>
-                      {item}
-                    </option>
-                  );
-                })}
-              </select>
             </div>
             <button
               // className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4"
