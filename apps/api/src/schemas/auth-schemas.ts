@@ -8,7 +8,6 @@ export const registerSchema = z.object({
     .regex(/^[A-Za-z\s]+$/, 'Name can only contain letters and spaces'),
   email: z.string().email('Invalid email format'),
   password: z.string(),
-  role: z.enum(['CUSTOMER', 'SUPER_ADMIN', 'STORE_ADMIN']),
 });
 
 export const loginSchema = z.object({
