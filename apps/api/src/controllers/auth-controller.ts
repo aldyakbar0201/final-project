@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
@@ -27,11 +28,11 @@ export async function register(
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email },
     });
 
     if (existingUser) {
-      res.status(400).json({ message: 'Email or username has already taken' });
+      res.status(400).json({ message: 'Email has already taken' });
       return;
     }
 
@@ -78,7 +79,7 @@ export async function register(
       return;
     }
 
-    res.status(201).json({ ok: true, message: 'New user added' });
+    res.status(201).json({ ok: true, message: 'Register Completed' });
   } catch (error) {
     next(error);
   }
@@ -130,17 +131,15 @@ export async function confirmEmail(
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { emailOrUsername, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!emailOrUsername || !password) {
+    if (!email || !password) {
       res.status(400).json({ message: 'Missing required fields!' });
       return;
     }
 
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: emailOrUsername }],
-      },
+      where: { email: email },
     });
 
     if (!existingUser) {

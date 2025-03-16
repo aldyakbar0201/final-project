@@ -16,8 +16,8 @@ app.get('/api/v1/status', (_req: Request, res: Response) => {
   res.status(200).json({ message: 'API is running' });
 });
 
-app.use('api/v1/auth', authRouter);
-app.use('api/v1/role', roleRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/roles', roleRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

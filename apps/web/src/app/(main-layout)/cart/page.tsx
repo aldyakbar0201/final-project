@@ -32,7 +32,7 @@ export default function Cart() {
   }
 
   return (
-    <section className="m-5 md:m-10 lg:m-20">
+    <section className="m-5 md:m-10 lg:m-20 min-h-screen">
       <h1 className="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold">Cart</h1>
 
       <div className="flex flex-col lg:flex-row gap-6">
