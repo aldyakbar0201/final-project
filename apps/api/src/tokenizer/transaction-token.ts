@@ -3,18 +3,28 @@ npm install --save midtrans-client*/
 
 //SAMPLE REQUEST START HERE
 
-import midtransClient from 'midtrans-client';
+import { MidtransClient } from 'midtrans-node-client';
 
-const { id, productName, price, quantity } = await request.json();
+const req = {
+  body: {
+    id: 'order-id',
+    productName: 'Sample Product',
+    price: 10000,
+    quantity: 1,
+  },
+};
+
+const { productName, price, quantity } = req.body;
 
 // Create Snap API instance
-const snap = new midtransClient.Snap({
+const snap = new MidtransClient.Snap({
   // Set to true if you want Production Environment (accept real transaction).
   isProduction: false,
   serverKey: 'MIDTRANS_SERVER_KEY',
-  clientKey: 'MIDTRANS_CLIENT_KEY',
+  // clientKey: 'MIDTRANS_CLIENT_KEY',
 });
 
+const id = new Date().getTime().toString();
 const parameter = {
   item_details: {
     name: productName,

@@ -44,7 +44,7 @@ export default function Checkout() {
   }, []);
 
   return (
-    <section className="max-w-md mx-auto bg-white rounded-lg shadow-md pt-6">
+    <section className="max-w-md mx-auto bg-white rounded-lg shadow-md py-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-6 pb-2 border-b">
         Order Summary
       </h2>
