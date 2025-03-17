@@ -2,7 +2,7 @@
 import { notify } from '@/utils/notify-toast';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Register() {
@@ -12,9 +12,10 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const router = useRouter();
+  // const router = useRouter();
 
-  async function handleRegister() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
     setFieldErrors({});
     setLoading(true);
     try {
@@ -31,7 +32,7 @@ export default function Register() {
         return notify(errorData.message || 'Error login!');
       }
       notify('Login successfull');
-      router.push('/');
+      // router.push('/');
     } catch (error) {
       console.log(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });
@@ -49,7 +50,7 @@ export default function Register() {
       <div className="flex w-full overflow-hidden rounded-xl">
         <div className="w-full md:w-1/2 p-8 my-auto">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">Login</h2>
-          <form onSubmit={handleRegister}>
+          <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label
                 htmlFor="email"
@@ -62,7 +63,7 @@ export default function Register() {
                 id="email"
                 onChange={(e) =>
                   setFormLogin((prev) => {
-                    return { ...prev, emailOrUsername: e.target.value };
+                    return { ...prev, email: e.target.value };
                   })
                 }
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"

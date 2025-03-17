@@ -27,11 +27,17 @@ enum DiscountType {
   FIXED_AMOUNT
 }
 
+enum VoucherType {
+  PRODUCT_SPECIFIC
+  TOTAL_PURCHASE
+  SHIPPING
+}
+
 enum OrderStatus {
   PENDING_PAYMENT
+  PENDING_CONFIRMATION
   PROCESSING
   SHIPPED
-  DELIVERED
   COMPLETED
   CANCELLED
 }
@@ -41,29 +47,32 @@ enum PaymentMethod {
   PAYMENT_GATEWAY
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-}
+// enum PaymentStatus {
+//   PENDING
+//   PAID
+//   FAILED
+// }
 
 // Tabel User
 model User {
-  id             Int            @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   name           String
-  email          String         @unique
-  emailConfirmed Boolean        @default(false)
+  email          String   @unique
+  emailConfirmed Boolean  @default(false)
   password       String
-  role           Role           @default(CUSTOMER)
+  role           Role     @default(CUSTOMER)
   userPhoto      String?
-  address        String?
-  storeId        Int? // Hanya untuk STORE_ADMIN
-  store          Store?         @relation(fields: [storeId], references: [id])
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  Cart           Cart?
-  Order          Order[]
-  ConfirmToken   ConfirmToken[]
+  address        String? //Buat model address
+  referralCode   String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  Cart               Cart?
+  Order              Order[]
+  ConfirmToken       ConfirmToken[]
+  ResetPasswordToken ResetPasswordToken[]
+  Address            Address[]
+  DiscountReport     DiscountReport[]
 }
 
 // Tabel ConfirmToken
@@ -74,7 +83,32 @@ model ConfirmToken {
   expiredDate DateTime
   used        Boolean  @default(false)
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ResetPasswordToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  token       String
+  expiredDate DateTime
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id         Int     @id @default(autoincrement())
+  userId     Int
+  street     String
+  city       String
+  postalCode Int
+  isDefault  Boolean
+  latitude   Float
+  longitude  Float
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /**
@@ -83,39 +117,52 @@ model ConfirmToken {
 
 // Tabel Toko
 model Store {
-  id           Int           @id @default(autoincrement())
-  name         String
-  address      String
-  users        User[]
-  products     Product[]
-  stocks       Stock[]
-  discounts    Discount[]
-  salesReports SalesReport[] // Relasi balik ke SalesReport
-  stockReports StockReport[] // Relasi balik ke StockReport
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  Order        Order[]
+  id          Int      @id @default(autoincrement())
+  name        String
+  userId      Int
+  address     String
+  latitude    Float
+  longitude   Float
+  maxDistance Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Product     Product[]
+  Stock       Stock[]
+  Discount    Discount[]
+  SalesReport SalesReport[] // Relasi balik ke SalesReport
+  StockReport StockReport[] // Relasi balik ke StockReport
+  Order       Order[]
 }
 
 // Tabel Produk
 model Product {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  description  String
-  price        Float
-  categoryId   Int
-  category     Category      @relation(fields: [categoryId], references: [id])
-  storeId      Int
-  store        Store         @relation(fields: [storeId], references: [id])
-  images       String[] // Array URL gambar
-  stocks       Stock[]
-  discounts    Discount[]
-  salesReports SalesReport[] // Relasi balik ke SalesReport
-  stockReports StockReport[] // Relasi balik ke StockReport
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String
+  price       Float
+  categoryId  Int
+  storeId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Category     Category       @relation(fields: [categoryId], references: [id])
+  Store        Store          @relation(fields: [storeId], references: [id])
+  Stock        Stock[]
+  Discount     Discount[]
+  SalesReport  SalesReport[] // Relasi balik ke SalesReport
+  StockReport  StockReport[] // Relasi balik ke StockReport
   CartItem     CartItem[]
   OrderItem    OrderItem[]
+  ProductImage ProductImage[]
+}
+
+model ProductImage {
+  id        Int    @id @default(autoincrement())
+  productId String
+  imageUrl  String
+
+  Product Product @relation(fields: [id], references: [id])
 }
 
 // Tabel Kategori Produk
@@ -131,8 +178,8 @@ model Category {
 model Stock {
   id        Int        @id @default(autoincrement())
   productId Int
-  product   Product    @relation(fields: [productId], references: [id])
   storeId   Int
+  product   Product    @relation(fields: [productId], references: [id])
   store     Store      @relation(fields: [storeId], references: [id])
   quantity  Int
   stockLogs StockLog[]
@@ -154,37 +201,57 @@ model StockLog {
 model Discount {
   id           Int          @id @default(autoincrement())
   productId    Int
-  product      Product      @relation(fields: [productId], references: [id])
   storeId      Int
-  store        Store        @relation(fields: [storeId], references: [id])
   type         DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
   value        Float // Nilai diskon (persentase atau nominal)
   minPurchase  Float? // Minimal pembelian untuk diskon
   buyOneGetOne Boolean      @default(false) // Diskon beli satu gratis satu
+  maxDiscount  Decimal
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  Product        Product          @relation(fields: [productId], references: [id])
+  Store          Store            @relation(fields: [storeId], references: [id])
+  DiscountReport DiscountReport[]
+}
+
+model Voucher {
+  id    Int          @id @default(autoincrement())
+  code  String
+  type  DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
+  value Float
+}
+
+model DiscountReport {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  dicountId Int
+
+  User     User     @relation(fields: [userId], references: [id])
+  Discount Discount @relation(fields: [dicountId], references: [id])
 }
 
 // Tabel Laporan Penjualan
 model SalesReport {
   id        Int      @id @default(autoincrement())
   storeId   Int
-  store     Store    @relation(fields: [storeId], references: [id])
   productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
+  store     Store    @relation(fields: [storeId], references: [id])
+  Product   Product  @relation(fields: [productId], references: [id])
+  Quantity  Int
   total     Float
-  date      DateTime // Tanggal penjualan
-  createdAt DateTime @default(now())
+  month     Int // Bulan laporan
+  year      Int // Tahun laporan
+  createdAt DateTime @default(now()) // Tanggal penjualan
 }
 
 // Tabel Laporan Stok
 model StockReport {
   id           Int      @id @default(autoincrement())
   storeId      Int
-  store        Store    @relation(fields: [storeId], references: [id])
   productId    Int
-  product      Product  @relation(fields: [productId], references: [id])
+  Store        Store    @relation(fields: [storeId], references: [id])
+  Product      Product  @relation(fields: [productId], references: [id])
   startStock   Int // Stok awal bulan
   endStock     Int // Stok akhir bulan
   totalAdded   Int // Total penambahan stok
@@ -198,14 +265,15 @@ model StockReport {
  * ------------------------------------ CART -----------------------------------
  */
 model Cart {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  totalPrice Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items CartItem[]
+  User     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  CartItem CartItem[]
 }
 
 model CartItem {
@@ -217,61 +285,51 @@ model CartItem {
   updatedAt DateTime @updatedAt
 
   Cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
-
-/**
- * ------------------------------------ - -----------------------------------
- */
 
 /**
  * ------------------------------------ ORDER -----------------------------------
  */
 model Order {
-  id               String        @id @default(uuid())
+  id               String      @id @default(uuid())
   userId           Int
   storeId          Int
-  orderNumber      String        @unique
+  orderNumber      String      @unique
   addressId        String
-  status           OrderStatus
+  orderStatus      OrderStatus
   paymentMethod    String
-  paymentStatus    PaymentStatus
+  // paymentStatus    PaymentStatus
   paymentProof     String?
   paymentProofTime DateTime?
+  paymentDueDate   DateTime
   shippingMethod   String
   shippingCost     Float
-  subtotal         Float
-  discountTotal    Float         @default(0)
+  discountTotal    Float       @default(0)
   total            Float
   notes            String?
   shippedAt        DateTime?
   deliveredAt      DateTime?
   cancelledAt      DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   // Relations
-  user  User        @relation(fields: [userId], references: [id])
-  store Store       @relation(fields: [storeId], references: [id])
-  items OrderItem[]
+  User  User        @relation(fields: [userId], references: [id])
+  Store Store       @relation(fields: [storeId], references: [id])
+  Items OrderItem[]
 }
 
 model OrderItem {
-  id             String   @id @default(uuid())
-  orderId        String
-  productId      Int
-  quantity       Int
-  price          Float
-  discountAmount Float    @default(0)
-  subtotal       Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(uuid())
+  orderId   String
+  productId Int
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  Order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product Product @relation(fields: [productId], references: [id])
 }
-
-/**
- * ------------------------------------ - -----------------------------------
- */

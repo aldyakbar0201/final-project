@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
@@ -20,7 +19,7 @@ export async function register(
   next: NextFunction,
 ) {
   try {
-    const { name, email, password, role } = registerSchema.parse(req.body);
+    const { name, email, password } = registerSchema.parse(req.body);
 
     if (!name || !email || !password) {
       res.status(400).json({ message: 'Missing required fields' });
@@ -44,7 +43,7 @@ export async function register(
         name,
         email,
         password: hashedPassword,
-        role: role as Role,
+        referralCode: new Date().getTime().toString(), //Buat fungsi untuk generate refferal code
       },
     });
 
@@ -68,7 +67,7 @@ export async function register(
       link: confirmationLink,
     });
     const { data, error } = await resend.emails.send({
-      from: 'Fresh Basket <onboarding@resend.dev>',
+      from: 'Fresh Basket <onboarding@frshbasket.shop>',
       to: email,
       subject: 'Welcome to Fresh Basket',
       html: htmlTemplate,
