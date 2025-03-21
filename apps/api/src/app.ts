@@ -6,6 +6,8 @@ import { notFoundMiddleware } from './middlewares/not-found.middleware.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
+import adminRoutes from './routers/admin-routes.js';
+import { VerifyToken } from './middlewares/admin-middleware.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -17,6 +19,9 @@ app.use(express.json());
 app.get('/api/v1/status', (_req: Request, res: Response) => {
   res.status(200).json({ message: 'API is running' });
 });
+
+// Routes admin
+app.use('/api/v1/admin', VerifyToken, adminRoutes);
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/roles', roleRouter);
