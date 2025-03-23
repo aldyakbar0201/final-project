@@ -1,7 +1,35 @@
+'use client';
 import { ShoppingCart, User, ZoomIn } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const { data } = useSession();
+  console.log(data);
+  console.log(isLoggedIn);
+
+  useEffect(() => {
+    // Fetch user authentication status (this is just a placeholder)
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/auth/me', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          setIsLoggedIn(true); // User is logged in
+        } else {
+          setIsLoggedIn(false); // User is not logged in
+        }
+      } catch (error) {
+        console.error('Error checking authentication status:', error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -17,10 +45,19 @@ export default function Navbar() {
             <ShoppingCart className="w-6 h-6 mr-1" />
             <span className="sr-only">Cart</span>
           </Link>
-          <Link href="/user-profile" className="flex items-center">
-            <User className="w-6 h-6 mr-1" />
-            <span className="sr-only">Profile</span>
-          </Link>
+          {data ? (
+            <Link href="/user-profile" className="flex items-center">
+              <User className="w-6 h-6 mr-1" />
+              <span className="sr-only">Profile</span>
+            </Link>
+          ) : (
+            <Link
+              href="/auth/user-login"
+              className="text-gray-700 hover:text-blue-500"
+            >
+              Login/Register
+            </Link>
+          )}
         </div>
       </div>
     </nav>

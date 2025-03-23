@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import handlebars from 'handlebars';
 
-import { registerSchema } from '../schemas/auth-schemas.js';
+// import { registerSchema } from '../schemas/auth-schemas.js';
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -19,9 +19,9 @@ export async function register(
   next: NextFunction,
 ) {
   try {
-    const { name, email, password } = registerSchema.parse(req.body);
+    const { name, email, password, provider } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email) {
       res.status(400).json({ message: 'Missing required fields' });
       return;
     }
@@ -36,12 +36,13 @@ export async function register(
     }
 
     const salt = await genSalt(10);
-    const hashedPassword = await hash(password, salt);
+    const hashedPassword = password ? await hash(password, salt) : null;
 
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
+        provider,
         password: hashedPassword,
         referralCode: new Date().getTime().toString(), //Buat fungsi untuk generate refferal code
       },
@@ -161,6 +162,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       id: existingUser.id,
       name: existingUser.name,
       email: existingUser.email,
+      picture: existingUser.userPhoto,
       role: existingUser.role,
     };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY as string, {
@@ -188,6 +190,40 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       .clearCookie('accessToken')
       .status(200)
       .json({ message: 'Logout successfully' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getCurrentUser(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found.' });
+      return;
+    }
+    res.status(200).json({
+      id: user.id,
+      name: user.name,
+      address: user.address,
+      photo: user.userPhoto,
+      email: user.email,
+      role: user.role,
+      emailConfirmed: user.emailConfirmed,
+      createdAt: user.createdAt,
+    });
   } catch (error) {
     next(error);
   }

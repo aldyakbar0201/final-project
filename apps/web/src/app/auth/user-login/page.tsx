@@ -2,23 +2,24 @@
 import { notify } from '@/utils/notify-toast';
 import Image from 'next/image';
 import Link from 'next/link';
-// import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { signInAction } from '@/actions/sign-in-action';
 
-export default function Register() {
+export default function Login() {
   const [formLogin, setFormLogin] = useState({
     email: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  // const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false); // State for showing/hiding password
+  const router = useRouter();
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setFieldErrors({});
-    setLoading(true);
+  async function handleLogin() {
     try {
+      setLoading(true);
       const response = await fetch('http://localhost:8000/api/v1/auth/login', {
         method: 'POST',
         headers: {
@@ -31,8 +32,8 @@ export default function Register() {
         const errorData = await response.json();
         return notify(errorData.message || 'Error login!');
       }
-      notify('Login successfull');
-      // router.push('/');
+      notify('Login successful');
+      router.push('/');
     } catch (error) {
       console.log(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });
@@ -50,7 +51,12 @@ export default function Register() {
       <div className="flex w-full overflow-hidden rounded-xl">
         <div className="w-full md:w-1/2 p-8 my-auto">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">Login</h2>
-          <form onSubmit={handleLogin}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
             <div className="mb-4">
               <label
                 htmlFor="email"
@@ -78,19 +84,32 @@ export default function Register() {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={formLogin.password}
-                onChange={(e) =>
-                  setFormLogin((prev) => {
-                    return { ...prev, password: e.target.value };
-                  })
-                }
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="Enter your password"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'} // Toggle between text and password
+                  id="password"
+                  value={formLogin.password}
+                  onChange={(e) =>
+                    setFormLogin((prev) => {
+                      return { ...prev, password: e.target.value };
+                    })
+                  }
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-400 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 mb-3" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-5 w-5 mb-3" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
@@ -103,8 +122,15 @@ export default function Register() {
               <span className="text-gray-500">OR</span>
               <div className="border-t border-gray-300 w-full ml-4"></div>
             </div>
+
+            {/* Display error message if exists */}
+            {fieldErrors.general && (
+              <p className="text-red-500 text-sm mt-2">{fieldErrors.general}</p>
+            )}
+          </form>
+          <form action={signInAction}>
             <button
-              type="button"
+              type="submit"
               className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
             >
               <svg
@@ -116,14 +142,10 @@ export default function Register() {
               </svg>
               Continue with Google
             </button>
-            {/* Display error message if exists */}
-            {fieldErrors.general && (
-              <p className="text-red-500 text-sm mt-2">{fieldErrors.general}</p>
-            )}
           </form>
           <div className="mt-4 text-center">
             <Link
-              href="/user-register"
+              href="auth/user-register"
               className="text-blue-500 hover:text-blue-700"
             >
               Don&apos;t have an account? Register
