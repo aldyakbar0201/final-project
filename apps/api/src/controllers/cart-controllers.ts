@@ -4,7 +4,9 @@ import { prisma } from '../configs/prisma.js';
 export async function getCartItems(_req: Request, res: Response) {
   try {
     const cartItems = await prisma.cart.findMany({
-      include: { product: true },
+      include: {
+        CartItem: true,
+      },
     });
 
     res.status(200).json(cartItems);
@@ -16,7 +18,8 @@ export async function getCartItems(_req: Request, res: Response) {
 
 export async function addToCart(req: Request, res: Response) {
   try {
-    const { productId, quantity } = req.body;
+    const { cartId, productId, quantity } = req.body;
+    const { totalPrice, userId } = req.body;
 
     //check the existence of the product
     const product = await prisma.product.findUnique({
@@ -41,14 +44,20 @@ export async function addToCart(req: Request, res: Response) {
     //add to cartItem
     const addedProduct = await prisma.cartItem.create({
       data: {
-        productId: productId,
-        quantity: quantity,
+        productId,
+        quantity,
+        cartId,
       },
     });
 
     // add to cart
     const addItemToCart = await prisma.cart.create({
-      data: addedProduct,
+      data: {
+        totalPrice,
+        userId,
+        // items: {
+        //   connect: { id: addedProduct.id }, // Connecting cartItem to cart
+      },
     });
     // const addItemToCart = await prisma.cart.create({
     //   data: {
@@ -58,7 +67,7 @@ export async function addToCart(req: Request, res: Response) {
     //   },
     // });
 
-    res.status(200).json({ added: addItemToCart });
+    res.status(200).json({ added: addedProduct, addItemToCart });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'problem in internal server' });

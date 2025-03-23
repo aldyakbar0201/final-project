@@ -1,5 +1,4 @@
 'use client';
-//tinggal di connect ke backend
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -38,50 +37,50 @@ export default function Cart() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* PRODUCT CARD */}
         <div
-          className={`${erase ? 'hidden' : 'flex'} w-full border-2 border-lime-600 p-5 flex-col md:flex-row md:items-center md:justify-between gap-4`}
+          className={`${erase ? 'hidden' : 'flex'} w-full border-2 border-lime-600 p-5 flex-row items-center`}
         >
-          <div
-            className={`flex sm:flex-row items-center gap-4 sm:gap-10 ${erase ? 'hidden' : 'block'}`}
-          >
-            {/* Image */}
+          {/* Image - Always on the left */}
+          <div className="relative flex-shrink-0 mr-10 w-28 h-28 ">
             <Image
-              src={'/file.svg'}
-              width={70}
-              height={70}
+              src={'/apple.jpg'}
+              fill
               alt="dummy product"
+              className="rounded-md overflow-hidden object-cover"
             />
-            {/* product details */}
-            <div className="flex flex-col text-start sm:text-left">
-              <h2 className="text-lg font-semibold">Tomatos</h2>
-              <p className="text-sm text-gray-600">x2</p>
-              <div className="flex items-center mt-2">
-                <button
-                  onClick={handleMinus}
-                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                >
-                  -
-                </button>
-                <h2 className="w-12 text-center text-lg font-semibold">
-                  {order}
-                </h2>
-                <button
-                  onClick={handlePlus}
-                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            {/* Price */}
-            <div className="flex flex-col items-end justify-end">
-              <span
-                className="text-xl relative top-0 cursor-pointer"
-                onClick={handleErase}
+          </div>
+
+          {/* Product details - Centered and takes available space */}
+          <div className="flex-grow flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">Tomatos</h2>
+            <p className="text-sm text-gray-600">x2</p>
+            <div className="flex items-center mt-3">
+              <button
+                onClick={handleMinus}
+                className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
               >
-                x
-              </span>
-              <p className="text-lg font-semibold">{`Rp${price}`}</p>
+                -
+              </button>
+              <h2 className="w-12 text-center text-lg font-semibold">
+                {order}
+              </h2>
+              <button
+                onClick={handlePlus}
+                className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
+              >
+                +
+              </button>
             </div>
+          </div>
+
+          {/* Price and delete button - Always on the right */}
+          <div className="flex-shrink-0 ml-auto flex flex-col items-end">
+            <span
+              className="text-xl w-5 h-5 cursor-pointer bg-red-600 p-2 rounded-md flex items-center justify-center text-white mb-7"
+              onClick={handleErase}
+            >
+              x
+            </span>
+            <p className="text-lg font-semibold">{`Rp${price}`}</p>
           </div>
         </div>
 
@@ -93,11 +92,10 @@ export default function Cart() {
               <p>Product Name</p>
               <p>{`x ${order}`}</p>
             </div>
-            <button
-              onClick={(e) => e.preventDefault()}
-              className="w-full bg-lime-600 text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition"
-            >
-              <Link href={'/checkout'}>Checkout</Link>
+            <button className="w-full bg-lime-600 text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition">
+              <Link href={'/checkout'} className="block w-full">
+                Checkout
+              </Link>
             </button>
           </div>
         </div>

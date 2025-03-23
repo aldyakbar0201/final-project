@@ -6,6 +6,7 @@ import { notFoundMiddleware } from './middlewares/not-found.middleware.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
+import orderRouter from './routers/order-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -20,6 +21,7 @@ app.get('/api/v1/status', (_req: Request, res: Response) => {
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/roles', roleRouter);
+app.use('/api/v1/orders', orderRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
