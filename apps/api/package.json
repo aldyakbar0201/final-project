@@ -12,8 +12,12 @@
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
+  "resolutions": {
+    "axios": "^1.8.2"
+  },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -22,12 +26,15 @@
     "@types/node": "^22.13.4",
     "eslint": "^9.20.1",
     "globals": "^15.15.0",
+    "prisma": "^6.5.0",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.2",
     "typescript-eslint": "^8.24.0"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.6.0",
     "cookie-parser": "^1.4.7",
