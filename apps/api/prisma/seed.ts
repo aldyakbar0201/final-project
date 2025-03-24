@@ -1,162 +1,234 @@
-// import bcrypt from 'bcryptjs';
-
-// import { prisma } from '../src/configs/prisma.js';
-
-// const { genSalt, hash } = bcrypt;
-
-// async function main() {
-//   try {
-//     /* -------------------------------------------------------------------------- */
-//     /*                                 Reset Data                                 */
-//     /* -------------------------------------------------------------------------- */
-//     await prisma.user.deleteMany();
-
-//     /* -------------------------------------------------------------------------- */
-//     /*                                  User Seed                                 */
-//     /* -------------------------------------------------------------------------- */
-//     const salt = await genSalt(10);
-//     const hashedPassword = await hash('newpass', salt);
-
-//     await prisma.user.create({
-//       data: {
-//         name: 'John Doe',
-//         email: 'john.doe@mail.com',
-//         password: hashedPassword,
-//         // //profileImage:
-//         //   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-//       },
-//     });
-
-//     await prisma.user.create({
-//       data: {
-//         name: 'Jane Smith',
-//         email: 'jane.smith@mail.com',
-//         password: hashedPassword,
-//         // profileImage:
-//         //   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-//       },
-//     });
-
-//     console.info(`Seeding successfully 🌱`);
-//   } catch (error) {
-//     console.error(`Seeding error: ${error}`);
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
-
-// main()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
-
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.user.deleteMany();
-  await prisma.store.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.cartItem.deleteMany();
+  // Clear existing data
   await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.discountReport.deleteMany();
+  await prisma.discount.deleteMany();
+  await prisma.productImage.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.store.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.confirmToken.deleteMany();
+  await prisma.address.deleteMany();
 
-  // Create a User
-  const user = await prisma.user.create({
-    data: {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      password: 'hashedpassword', // Replace with a properly hashed password
-      referralCode: uuidv4(),
-    },
+  // Create Users
+  const passwordHash = await bcrypt.hash('password123', 10);
+  await prisma.user.createMany({
+    data: [
+      {
+        name: 'Alice',
+        email: 'alice@example.com',
+        password: passwordHash,
+        emailConfirmed: true,
+        referralCode: 'REF123',
+        provider: 'EMAIL',
+      },
+      {
+        name: 'Bob',
+        email: 'bob@example.com',
+        password: passwordHash,
+        emailConfirmed: true,
+        referralCode: 'REF456',
+        provider: 'EMAIL',
+      },
+      {
+        name: 'Charlie',
+        email: 'charlie@example.com',
+        password: passwordHash,
+        emailConfirmed: true,
+        referralCode: 'REF789',
+        provider: 'EMAIL',
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  // Create a Store
-  const store = await prisma.store.create({
-    data: {
-      name: 'Sample Store',
-      userId: user.id,
-      address: '123 Main Street',
-      latitude: -6.2088,
-      longitude: 106.8456,
-      maxDistance: 50.0,
-    },
+  const userList = await prisma.user.findMany();
+
+  // Create Addresses
+  await Promise.all(
+    userList.map((user, index) =>
+      prisma.address.create({
+        data: {
+          userId: user.id,
+          street: `Street ${index + 1}`,
+          city: `City ${index + 1}`,
+          postalCode: 12345 + index,
+          isDefault: index === 0, // Set the first address as default
+          latitude: -6.2 + index * 0.01,
+          longitude: 106.816666 + index * 0.01,
+        },
+      }),
+    ),
+  );
+
+  // Retrieve all addresses
+  const addresses = await prisma.address.findMany();
+
+  // Create Stores
+  await prisma.store.createMany({
+    data: [
+      {
+        name: 'Tech Store',
+        userId: userList[0].id,
+        address: '123 Tech Lane',
+        latitude: -6.2,
+        longitude: 106.816666,
+        maxDistance: 10,
+      },
+      {
+        name: 'Grocery Store',
+        userId: userList[1].id,
+        address: '456 Grocery Ave',
+        latitude: -6.21,
+        longitude: 106.826666,
+        maxDistance: 15,
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  // Create a Category
-  const category = await prisma.category.create({
-    data: {
-      name: 'Sample Category',
-    },
+  const storeList = await prisma.store.findMany();
+
+  // Create Categories
+  await prisma.category.createMany({
+    data: [
+      { name: 'Electronics' },
+      { name: 'Groceries' },
+      { name: 'Clothing' },
+    ],
+    skipDuplicates: true,
   });
 
-  // Create a Product
-  const product = await prisma.product.create({
-    data: {
-      name: 'Sample Product',
-      description: 'A sample product description',
-      price: 100000,
-      categoryId: category.id, // Use dynamically created category id
-      storeId: store.id,
-    },
+  const categoryList = await prisma.category.findMany();
+
+  // Create Products
+  await prisma.product.createMany({
+    data: [
+      {
+        name: 'Laptop',
+        description: 'High performance laptop',
+        price: 1500.0,
+        categoryId: categoryList[0].id,
+        storeId: storeList[0].id,
+      },
+      {
+        name: 'Smartphone',
+        description: 'Latest model smartphone',
+        price: 800.0,
+        categoryId: categoryList[0].id,
+        storeId: storeList[0].id,
+      },
+      {
+        name: 'Apple',
+        description: 'Fresh apples',
+        price: 2.0,
+        categoryId: categoryList[1].id,
+        storeId: storeList[1].id,
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  // Create a Cart
-  const cart = await prisma.cart.create({
-    data: {
-      userId: user.id,
-      totalPrice: product.price,
-    },
+  const productList = await prisma.product.findMany();
+
+  // Create Discounts
+  await prisma.discount.createMany({
+    data: [
+      {
+        productId: productList[0].id,
+        storeId: storeList[0].id,
+        type: 'PERCENTAGE',
+        value: 10,
+        minPurchase: 100,
+        buyOneGetOne: false,
+        maxDiscount: 100,
+      },
+      {
+        productId: productList[1].id,
+        storeId: storeList[0].id,
+        type: 'FIXED_AMOUNT',
+        value: 50,
+        minPurchase: 200,
+        buyOneGetOne: true,
+        maxDiscount: 200,
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  // Create a CartItem
-  const cartItem = await prisma.cartItem.create({
-    data: {
-      cartId: cart.id,
-      productId: product.id,
-      quantity: 2,
-    },
-  });
+  // Create Carts
+  await Promise.all(
+    userList.map((user) =>
+      prisma.cart.create({
+        data: {
+          userId: user.id,
+          totalPrice: 0,
+        },
+      }),
+    ),
+  );
 
-  // Create an Order
-  const order = await prisma.order.create({
-    data: {
-      id: uuidv4(),
-      userId: user.id,
-      storeId: store.id,
-      orderNumber: uuidv4(),
-      addressId: 'TEMP_ADDRESS_ID',
-      orderStatus: 'PENDING_PAYMENT',
-      paymentMethod: 'MIDTRANS',
-      paymentProof: 'https://midtrans.com/payment-proof',
-      paymentProofTime: new Date(),
-      paymentDueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      shippingMethod: 'JNE',
-      shippingCost: 15000,
-      total: product.price * cartItem.quantity + 15000,
-      notes: 'Please deliver before noon.',
-    },
-  });
+  const cartList = await prisma.cart.findMany();
 
-  // Create an OrderItem
-  await prisma.orderItem.create({
-    data: {
-      orderId: order.id,
-      cartId: cart.id, // Ensure cartId is correctly referenced
-      productId: product.id,
-      quantity: cartItem.quantity,
-      price: product.price,
-    },
-  });
+  // Create CartItems
+  await Promise.all(
+    cartList.map((cart, index) =>
+      prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: productList[index % productList.length].id,
+          quantity: 2,
+        },
+      }),
+    ),
+  );
 
-  console.log('Database seeded successfully!');
+  // Create Orders
+  await Promise.all(
+    userList.map((user, index) =>
+      prisma.order.create({
+        data: {
+          userId: user.id,
+          storeId: storeList[index % storeList.length].id,
+          orderNumber: `ORDER${index + 1}`,
+          addressId: String(addresses[index].id), // Link to the created address
+          orderStatus: 'PENDING_PAYMENT',
+          paymentMethod: 'BANK_TRANSFER',
+          paymentDueDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          shippingMethod: 'Standard',
+          shippingCost: 5.0,
+          total: 100.0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }),
+    ),
+  );
+
+  // Create ConfirmTokens
+  await Promise.all(
+    userList.map((user) =>
+      prisma.confirmToken.create({
+        data: {
+          token: crypto.randomBytes(20).toString('hex'),
+          expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day expiration
+          userId: user.id,
+        },
+      }),
+    ),
+  );
+
+  console.log('Seed data successfully inserted');
 }
 
 main()

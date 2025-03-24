@@ -21,6 +21,11 @@ enum Role {
   CUSTOMER
 }
 
+enum Provider {
+  GOOGLE
+  EMAIL
+}
+
 // Enum untuk Tipe Diskon
 enum DiscountType {
   PERCENTAGE
@@ -59,8 +64,9 @@ model User {
   name           String
   email          String   @unique
   emailConfirmed Boolean  @default(false)
-  password       String
+  password       String?
   role           Role     @default(CUSTOMER)
+  provider       Provider
   userPhoto      String?
   address        String? //Buat model address
   referralCode   String   @unique
