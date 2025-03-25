@@ -71,6 +71,9 @@ async function main() {
     ),
   );
 
+  // Retrieve all addresses
+  const addresses = await prisma.address.findMany();
+
   // Create Stores
   await prisma.store.createMany({
     data: [
@@ -229,9 +232,8 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
+  .catch((error) => {
+    console.error('Error seeding database:', error);
   })
   .finally(async () => {
     await prisma.$disconnect();

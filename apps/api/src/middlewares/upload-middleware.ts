@@ -1,7 +1,7 @@
 import path from 'node:path';
 import multer from 'multer';
 
-export const upload = multer({
+const upload = multer({
   storage: multer.diskStorage({
     destination: function (_req, _file, cb) {
       cb(null, '/public/upload');
@@ -24,3 +24,5 @@ export const upload = multer({
   },
   limits: { fileSize: 1000000 },
 });
+
+export default upload;

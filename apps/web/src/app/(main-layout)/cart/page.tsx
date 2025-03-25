@@ -1,5 +1,4 @@
 'use client';
-//tinggal di connect ke backend
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -37,67 +36,93 @@ export default function Cart() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* PRODUCT CARD */}
-        <div
-          className={`${erase ? 'hidden' : 'flex'} w-full border-2 border-lime-600 p-5 flex-col md:flex-row md:items-center md:justify-between gap-4`}
-        >
-          <div
-            className={`flex sm:flex-row items-center gap-4 sm:gap-10 ${erase ? 'hidden' : 'block'}`}
-          >
-            {/* Image */}
-            <Image
-              src={'/file.svg'}
-              width={70}
-              height={70}
-              alt="dummy product"
-            />
-            {/* product details */}
-            <div className="flex flex-col text-start sm:text-left">
-              <h2 className="text-lg font-semibold">Tomatos</h2>
-              <p className="text-sm text-gray-600">x2</p>
-              <div className="flex items-center mt-2">
-                <button
-                  onClick={handleMinus}
-                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                >
-                  -
-                </button>
-                <h2 className="w-12 text-center text-lg font-semibold">
-                  {order}
-                </h2>
-                <button
-                  onClick={handlePlus}
-                  className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                >
-                  +
-                </button>
+        <div className="w-full lg:w-[70%]">
+          {!erase ? (
+            <div className="border-2 border-lime-600 p-5 flex flex-col gap-4">
+              {/* Single Product Card */}
+              <div className="flex items-center justify-between">
+                {/* Image - Always on the left */}
+                <div className="relative flex-shrink-0 mr-4 w-28 h-28">
+                  <Image
+                    src={'/apple.jpg'}
+                    fill
+                    alt="dummy product"
+                    className="rounded-md overflow-hidden object-cover"
+                  />
+                </div>
+
+                {/* Product details - Centered and takes available space */}
+                <div className="flex-grow flex flex-col gap-2">
+                  <h2 className="text-lg font-semibold">Tomatos</h2>
+                  <p className="text-sm text-gray-600">x2</p>
+                  <div className="flex items-center mt-3">
+                    <button
+                      onClick={handleMinus}
+                      className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
+                    >
+                      -
+                    </button>
+                    <h2 className="w-12 text-center text-lg font-semibold">
+                      {order}
+                    </h2>
+                    <button
+                      onClick={handlePlus}
+                      className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Price and delete button - Always on the right */}
+                <div className="flex flex-col items-end">
+                  <span
+                    className="text-xl w-5 h-5 cursor-pointer bg-red-600 p-2 rounded-md flex items-center justify-center text-white mb-7"
+                    onClick={handleErase}
+                  >
+                    x
+                  </span>
+                  <p className="text-lg font-semibold">{`Rp${price}`}</p>
+                </div>
               </div>
             </div>
-            {/* Price */}
-            <div className="flex flex-col items-end justify-end">
-              <span
-                className="text-xl relative top-0 cursor-pointer"
-                onClick={handleErase}
+          ) : (
+            // Empty Cart Message Component
+            <div className="w-full text-center py-10 border-2 border-lime-600 rounded-md">
+              <h2 className="text-2xl font-semibold">
+                No item is in the cart.
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Please look for items in our store.
+              </p>
+              <Link
+                href="/store"
+                className="text-lime-600 hover:underline mt-4 inline-block"
               >
-                x
-              </span>
-              <p className="text-lg font-semibold">{`Rp${price}`}</p>
+                Go to Store
+              </Link>
             </div>
-          </div>
+          )}
         </div>
 
         {/* TOTAL CARD */}
-        <div className="w-full lg:w-[400px] border-2 border-lime-600 p-4">
+        <div className="w-full lg:w-[30%] sticky top-10 bg-white shadow-md p-4 border-2 border-lime-600">
           <h2 className="text-2xl font-semibold mb-2">Bill</h2>
           <div className="flex flex-col gap-4">
             <div className="flex justify-between text-lg">
               <p>Product Name</p>
               <p>{`x ${order}`}</p>
             </div>
+            <p className="text-lg font-semibold">{`Rp${price},00`}</p>
             <button
-              onClick={(e) => e.preventDefault()}
-              className="w-full bg-lime-600 text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition"
+              className={`w-full ${
+                erase ? 'bg-gray-400 cursor-not-allowed' : 'bg-lime-600'
+              } text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition`}
+              disabled={erase}
             >
-              <Link href={'/checkout'}>Checkout</Link>
+              <Link href={'/checkout'} className="block w-full">
+                Checkout
+              </Link>
             </button>
           </div>
         </div>
