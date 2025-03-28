@@ -3,31 +3,36 @@ import jwt from 'jsonwebtoken';
 import { CustomJwtPayload } from '../types/express.js';
 import { Role } from '@prisma/client';
 
-// Middleware untuk memverifikasi token JWT
-export async function VerifyToken(
-  req: Request,
+interface AuthenticatedRequest extends Request {
+  user?: CustomJwtPayload | null;
+}
+
+export function VerifyToken(
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
-) {
+): void {
   try {
-    const token = req.cookies.token; // Ambil token dari cookies
+    console.log('Cookies in request:', req.cookies);
+
+    const token = req.cookies?.token;
     if (!token) {
       res.status(401).json({ message: 'No token provided' });
-      return; // Hentikan eksekusi fungsi
+      return; // Hentikan eksekusi agar tidak lanjut ke `next()`
     }
 
     // Verifikasi token
-    const verifiedUser = jwt.verify(
+    const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string,
     ) as CustomJwtPayload;
 
-    // Simpan data user di request object
-    req.user = verifiedUser;
-
-    next(); // Lanjutkan ke middleware atau handler berikutnya
-  } catch (error) {
-    next(error); // Lanjutkan ke error handler
+    req.user = decoded ?? null;
+    next(); // Pastikan selalu memanggil next()
+  } catch (err) {
+    console.error('JWT Verification Error:', err);
+    res.status(401).json({ message: 'Invalid or expired token' });
+    return; // Hentikan eksekusi agar tidak lanjut ke `next()`
   }
 }
 
