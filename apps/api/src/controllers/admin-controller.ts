@@ -17,35 +17,51 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ message: 'Email and password are required' });
-      return; // Hentikan eksekusi fungsi
+      res.status(400).json({ message: 'Missing required fields!' });
+      return;
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: { email: email },
     });
 
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return; // Hentikan eksekusi fungsi
+    if (!existingUser) {
+      res.status(400).json({ message: 'User not found' });
+      return;
     }
 
-    const isValidPassword = await compare(password, user.password);
+    if (!existingUser.emailConfirmed) {
+      res.status(400).json({ message: 'Please complete your registration' });
+      return;
+    }
+
+    const isValidPassword = await compare(password, existingUser.password);
+
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });
-      return; // Hentikan eksekusi fungsi
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user.id, role: user.role }, // Payload
-      process.env.JWT_SECRET_KEY as string, // Secret key
-      { expiresIn: '1h' }, // Token expires in 1 hour
-    );
+    const jwtPayload = {
+      id: existingUser.id,
+      name: existingUser.name,
+      email: existingUser.email,
+      role: existingUser.role,
+    };
+    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY as string, {
+      expiresIn: '1h',
+    });
 
-    res.status(200).json({ message: 'Login successful', token }); // Kirim token ke client
+    res
+      .cookie('accessToken', token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        domain: 'localhost',
+      })
+      .status(200)
+      .json({ ok: true, message: 'Login success' });
   } catch (error) {
-    next(error); // Lanjutkan ke error handler
+    next(error);
   }
 }
 

@@ -1,11 +1,16 @@
-import { PrismaClient } from '@prisma/client';
+
 import bcrypt from 'bcryptjs';
+
+import { PrismaClient, DiscountType } from '@prisma/client';
+
 import crypto from 'crypto';
+
 
 const prisma = new PrismaClient();
 
-async function main() {
-  // Clear existing data
+    /* -------------------------------------------------------------------------- */
+    /*                                 Reset Data                                 */
+    /* -------------------------------------------------------------------------- */
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -19,154 +24,142 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.confirmToken.deleteMany();
   await prisma.address.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.store.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.stock.deleteMany();
+    await prisma.discount.deleteMany();
+    await prisma.salesReport.deleteMany();
+    await prisma.stockReport.deleteMany();
 
-  // Create Users
-  const passwordHash = await bcrypt.hash('password123', 10);
-  await prisma.user.createMany({
-    data: [
-      {
-        name: 'Alice',
-        email: 'alice@example.com',
-        password: passwordHash,
-        emailConfirmed: true,
-        referralCode: 'REF123',
-        provider: 'EMAIL',
-      },
-      {
-        name: 'Bob',
-        email: 'bob@example.com',
-        password: passwordHash,
-        emailConfirmed: true,
-        referralCode: 'REF456',
-        provider: 'EMAIL',
-      },
-      {
-        name: 'Charlie',
-        email: 'charlie@example.com',
-        password: passwordHash,
-        emailConfirmed: true,
-        referralCode: 'REF789',
-        provider: 'EMAIL',
-      },
-    ],
-    skipDuplicates: true,
-  });
+    /* -------------------------------------------------------------------------- */
+    /*                                  User Seed                                 */
+    /* -------------------------------------------------------------------------- */
+    const passwordHash = await bcrypt.hash('password123', 10);
 
-  const userList = await prisma.user.findMany();
-
-  // Create Addresses
-  await Promise.all(
-    userList.map((user, index) =>
-      prisma.address.create({
-        data: {
-          userId: user.id,
-          street: `Street ${index + 1}`,
-          city: `City ${index + 1}`,
-          postalCode: 12345 + index,
-          isDefault: index === 0, // Set the first address as default
-          latitude: -6.2 + index * 0.01,
-          longitude: 106.816666 + index * 0.01,
+    // Buat beberapa user biasa
+    await prisma.user.createMany({
+      data: [
+        {
+          name: 'Alice',
+          password: passwordHash,
+          email: 'alice@example.com',
+          emailConfirmed: true,
+          referralCode: 'REF123',
         },
-      }),
-    ),
-  );
+        {
+          name: 'Bob',
+          password: passwordHash,
+          email: 'bob@example.com',
+          emailConfirmed: true,
+          referralCode: 'REF456',
+        },
+        {
+          name: 'Charlie',
+          password: passwordHash,
+          email: 'charlie@example.com',
+          emailConfirmed: true,
+          referralCode: 'REF789',
+        },
+      ],
+      skipDuplicates: true,
+    });
 
-  // Retrieve all addresses
-  const addresses = await prisma.address.findMany();
+    // Buat super admin
+    await prisma.user.create({
+      data: {
+        name: 'Super Admin',
+        email: 'superadmin@example.com',
+        password: passwordHash,
+        role: 'SUPER_ADMIN',
+        referralCode: 'SUPERADMIN123',
 
-  // Create Stores
-  await prisma.store.createMany({
-    data: [
-      {
-        name: 'Tech Store',
-        userId: userList[0].id,
-        address: '123 Tech Lane',
-        latitude: -6.2,
-        longitude: 106.816666,
-        maxDistance: 10,
-      },
-      {
-        name: 'Grocery Store',
-        userId: userList[1].id,
-        address: '456 Grocery Ave',
-        latitude: -6.21,
-        longitude: 106.826666,
-        maxDistance: 15,
-      },
-    ],
-    skipDuplicates: true,
-  });
 
-  const storeList = await prisma.store.findMany();
 
-  // Create Categories
-  await prisma.category.createMany({
-    data: [
-      { name: 'Electronics' },
-      { name: 'Groceries' },
-      { name: 'Clothing' },
-    ],
-    skipDuplicates: true,
-  });
+    /* -------------------------------------------------------------------------- */
+    /*                                 Other Seeds                                */
+    /* -------------------------------------------------------------------------- */
+    // Seed untuk tabel Store
+    await prisma.store.createMany({
+      data: Array.from({ length: 100 }).map((_, index) => ({
+        name: `Store ${index + 1}`,
+        userId: 1, // Menggunakan user pertama yang dibuat (Alice)
+        address: `Address ${index + 1}`,
+        latitude: 40.7128 + index * 0.01,
+        longitude: -74.006 + index * 0.01,
+        maxDistance: 50.0,
+      })),
+    });
 
-  const categoryList = await prisma.category.findMany();
+    // Seed untuk tabel Category
+    await prisma.category.createMany({
+      data: Array.from({ length: 10 }).map((_, index) => ({
+        name: `Category ${index + 1}`,
+      })),
+    });
 
-  // Create Products
-  await prisma.product.createMany({
-    data: [
-      {
-        name: 'Laptop',
-        description: 'High performance laptop',
-        price: 1500.0,
-        categoryId: categoryList[0].id,
-        storeId: storeList[0].id,
-      },
-      {
-        name: 'Smartphone',
-        description: 'Latest model smartphone',
-        price: 800.0,
-        categoryId: categoryList[0].id,
-        storeId: storeList[0].id,
-      },
-      {
-        name: 'Apple',
-        description: 'Fresh apples',
-        price: 2.0,
-        categoryId: categoryList[1].id,
-        storeId: storeList[1].id,
-      },
-    ],
-    skipDuplicates: true,
-  });
+    // Seed untuk tabel Product
+    await prisma.product.createMany({
+      data: Array.from({ length: 200 }).map((_, index) => ({
+        name: `Product ${index + 1}`,
+        description: `Description for Product ${index + 1}`,
+        price: parseFloat((Math.random() * 1000).toFixed(2)),
+        categoryId: (index % 10) + 1, // Assign product to category (1-10)
+        storeId: (index % 100) + 1, // Assign product to store (1-100)
+      })),
+    });
 
-  const productList = await prisma.product.findMany();
+    // Seed untuk tabel Stock
+    await prisma.stock.createMany({
+      data: Array.from({ length: 200 }).map((_, index) => ({
+        productId: (index % 200) + 1, // Assign stock to product (1-200)
+        storeId: (index % 100) + 1, // Assign stock to store (1-100)
+        quantity: Math.floor(Math.random() * 100) + 1, // Random quantity between 1 and 100
+      })),
+    });
 
-  // Create Discounts
-  await prisma.discount.createMany({
-    data: [
-      {
-        productId: productList[0].id,
-        storeId: storeList[0].id,
-        type: 'PERCENTAGE',
-        value: 10,
-        minPurchase: 100,
-        buyOneGetOne: false,
-        maxDiscount: 100,
-      },
-      {
-        productId: productList[1].id,
-        storeId: storeList[0].id,
-        type: 'FIXED_AMOUNT',
-        value: 50,
-        minPurchase: 200,
-        buyOneGetOne: true,
-        maxDiscount: 200,
-      },
-    ],
-    skipDuplicates: true,
-  });
+    // Seed untuk tabel Discount
+    await prisma.discount.createMany({
+      data: Array.from({ length: 100 }).map((_, index) => ({
+        productId: (index % 200) + 1, // Assign discount to product (1-200)
+        storeId: (index % 100) + 1, // Assign discount to store (1-100)
+        type:
+          index % 2 === 0 ? DiscountType.PERCENTAGE : DiscountType.FIXED_AMOUNT,
+        value: Math.random() * 50 + 5, // Random discount value between 5 and 50
+        minPurchase: Math.random() * 500 + 50, // Random min purchase between 50 and 500
+        buyOneGetOne: Math.random() > 0.5, // Random BuyOneGetOne flag
+        maxDiscount: (Math.random() * 100).toFixed(2),
+      })),
+    });
 
-  // Create Carts
+    // Seed untuk tabel SalesReport
+    await prisma.salesReport.createMany({
+      data: Array.from({ length: 1000 }).map((_, index) => ({
+        storeId: (index % 100) + 1, // Assign sales report to store (1-100)
+        productId: (index % 200) + 1, // Assign sales report to product (1-200)
+        Quantity: Math.floor(Math.random() * 50) + 1, // Random quantity between 1 and 50
+        total: Math.floor(Math.random() * 1000) + 50, // Random total value between 50 and 1000
+        month: Math.floor(Math.random() * 12) + 1, // Random month between 1 and 12
+        year: 2025, // Hardcoded year
+      })),
+    });
+
+    // Seed untuk tabel StockReport
+    await prisma.stockReport.createMany({
+      data: Array.from({ length: 500 }).map((_, index) => ({
+        storeId: (index % 100) + 1, // Assign stock report to store (1-100)
+        productId: (index % 200) + 1, // Assign stock report to product (1-200)
+        startStock: Math.floor(Math.random() * 100) + 1, // Random start stock between 1 and 100
+        endStock: Math.floor(Math.random() * 100) + 1, // Random end stock between 1 and 100
+        totalAdded: Math.floor(Math.random() * 50) + 1, // Random total added between 1 and 50
+        totalReduced: Math.floor(Math.random() * 50) + 1, // Random total reduced between 1 and 50
+        month: Math.floor(Math.random() * 12) + 1, // Random month between 1 and 12
+        year: 2025, // Hardcoded year
+      })),
+    });
+
+     // Create Carts
   await Promise.all(
     userList.map((user) =>
       prisma.cart.create({
@@ -229,7 +222,13 @@ async function main() {
   );
 
   console.log('Seed data successfully inserted');
-}
+
+    console.info('Seeding successfully completed 🌱');
+  } catch (error) {
+    console.error(`Seeding error: ${error}`);
+  } finally {
+    await prisma.$disconnect();
+  }
 
 main()
   .catch((error) => {
