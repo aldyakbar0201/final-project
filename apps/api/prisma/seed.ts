@@ -1,13 +1,29 @@
+
 import bcrypt from 'bcryptjs';
+
 import { PrismaClient, DiscountType } from '@prisma/client';
+
+import crypto from 'crypto';
+
 
 const prisma = new PrismaClient();
 
-async function main() {
-  try {
     /* -------------------------------------------------------------------------- */
     /*                                 Reset Data                                 */
     /* -------------------------------------------------------------------------- */
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.discountReport.deleteMany();
+  await prisma.discount.deleteMany();
+  await prisma.productImage.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.store.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.confirmToken.deleteMany();
+  await prisma.address.deleteMany();
     await prisma.user.deleteMany();
     await prisma.store.deleteMany();
     await prisma.category.deleteMany();
@@ -58,8 +74,8 @@ async function main() {
         password: passwordHash,
         role: 'SUPER_ADMIN',
         referralCode: 'SUPERADMIN123',
-      },
-    });
+
+
 
     /* -------------------------------------------------------------------------- */
     /*                                 Other Seeds                                */
@@ -143,18 +159,80 @@ async function main() {
       })),
     });
 
+     // Create Carts
+  await Promise.all(
+    userList.map((user) =>
+      prisma.cart.create({
+        data: {
+          userId: user.id,
+          totalPrice: 0,
+        },
+      }),
+    ),
+  );
+
+  const cartList = await prisma.cart.findMany();
+
+  // Create CartItems
+  await Promise.all(
+    cartList.map((cart, index) =>
+      prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: productList[index % productList.length].id,
+          quantity: 2,
+        },
+      }),
+    ),
+  );
+
+  // Create Orders
+  await Promise.all(
+    userList.map((user, index) =>
+      prisma.order.create({
+        data: {
+          userId: user.id,
+          storeId: storeList[index % storeList.length].id,
+          orderNumber: `ORDER${index + 1}`,
+          addressId: String(addresses[index].id), // Link to the created address
+          orderStatus: 'PENDING_PAYMENT',
+          paymentMethod: 'BANK_TRANSFER',
+          paymentDueDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          shippingMethod: 'Standard',
+          shippingCost: 5.0,
+          total: 100.0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }),
+    ),
+  );
+
+  // Create ConfirmTokens
+  await Promise.all(
+    userList.map((user) =>
+      prisma.confirmToken.create({
+        data: {
+          token: crypto.randomBytes(20).toString('hex'),
+          expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day expiration
+          userId: user.id,
+        },
+      }),
+    ),
+  );
+
+  console.log('Seed data successfully inserted');
+
     console.info('Seeding successfully completed 🌱');
   } catch (error) {
     console.error(`Seeding error: ${error}`);
   } finally {
     await prisma.$disconnect();
   }
-}
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
+  .catch((error) => {
+    console.error('Error seeding database:', error);
   })
   .finally(async () => {
     await prisma.$disconnect();

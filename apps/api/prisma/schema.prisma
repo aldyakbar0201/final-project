@@ -21,6 +21,11 @@ enum Role {
   CUSTOMER
 }
 
+enum Provider {
+  GOOGLE
+  EMAIL
+}
+
 // Enum untuk Tipe Diskon
 enum DiscountType {
   PERCENTAGE
@@ -59,8 +64,9 @@ model User {
   name           String
   email          String   @unique
   emailConfirmed Boolean  @default(false)
-  password       String
+  password       String?
   role           Role     @default(CUSTOMER)
+  provider       Provider
   userPhoto      String?
   address        String? //Buat model address
   referralCode   String   @unique
@@ -272,8 +278,9 @@ model Cart {
   updatedAt  DateTime @updatedAt
 
   // Relations
-  User     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  CartItem CartItem[]
+  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  CartItem  CartItem[]
+  OrderItem OrderItem[]
 }
 
 model CartItem {
@@ -323,6 +330,7 @@ model Order {
 model OrderItem {
   id        String   @id @default(uuid())
   orderId   String
+  cartId    Int
   productId Int
   quantity  Int
   price     Float
@@ -332,4 +340,5 @@ model OrderItem {
   // Relations
   Order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   Product Product @relation(fields: [productId], references: [id])
+  Cart    Cart    @relation(fields: [cartId], references: [id])
 }
