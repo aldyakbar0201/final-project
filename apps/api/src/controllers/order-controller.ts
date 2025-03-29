@@ -19,6 +19,7 @@ export async function createOrderMidtrans(req: Request, res: Response) {
   const {
     userId,
     storeId,
+    addressId,
     shippingMethod,
     shippingCost,
     total,
@@ -62,11 +63,10 @@ export async function createOrderMidtrans(req: Request, res: Response) {
 
     const addOrderItemToOrder = await prisma.order.create({
       data: {
-        id: id,
         userId,
         storeId,
+        addressId,
         orderNumber: uuid(),
-        addressId: 'TEMP_ADDRESS_ID', // Replace with actual address ID logic
         orderStatus, // Default status for manual orders
         paymentMethod: 'MIDTRANS', // Payment method for manual transactions
         paymentProof: transaction.redirect_url, // Save the file URL
@@ -88,31 +88,62 @@ export async function createOrderMidtrans(req: Request, res: Response) {
   }
 }
 
-export async function createOrderManual(req: Request, res: Response) {
-  const { orderId, cartId, productId, price, quantity } = req.body;
-  const {
-    userId,
-    storeId,
-    shippingMethod,
-    shippingCost,
-    total,
-    notes,
-    orderStatus,
-  } = req.body;
-  // const paymentProof = req.file
-
-  let uploadResult;
-  if (req.file) {
-    uploadResult = await cloudinary.uploader
-      .upload(req.file.path, { folder: 'payment-proof', resource_type: 'raw' })
-      .catch((error) => {
-        console.log(error);
-      });
-  } else {
-    return res.status(400).json({ error: 'File is required' });
-  }
-
+export async function createOrderManual(
+  req: Request,
+  res: Response,
+): Promise<void> {
   try {
+    // Destructure request body
+    const { orderId, cartId, productId, price, quantity } = req.body;
+    const {
+      userId,
+      storeId,
+      addressId,
+      shippingMethod,
+      shippingCost,
+      total,
+      notes,
+      orderStatus,
+    } = req.body;
+    // const { file } = req;
+
+    // Validate required fields
+    if (
+      !orderId ||
+      !cartId ||
+      !productId ||
+      !price ||
+      !quantity ||
+      !userId ||
+      !storeId ||
+      !total
+    ) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    // Check if a file was uploaded
+    if (!req.file) {
+      res.status(400).json({ error: 'File is required' });
+      return;
+    }
+
+    // Upload the file to Cloudinary
+    let uploadResult;
+    try {
+      uploadResult = await cloudinary.uploader.upload(
+        req.file.buffer
+          ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+          : req.file.path,
+        { folder: 'payment-proof', resource_type: 'auto' },
+      );
+    } catch (cloudinaryError) {
+      console.error('Cloudinary upload error:', cloudinaryError);
+      res.status(500).json({ error: 'Failed to upload file to Cloudinary' });
+      return;
+    }
+
+    // Add the cart item to the order
     const addCartToOrderItem = await prisma.orderItem.create({
       data: {
         orderId,
@@ -123,15 +154,16 @@ export async function createOrderManual(req: Request, res: Response) {
       },
     });
 
+    // Create the order in the database
     const addOrderItemToOrder = await prisma.order.create({
       data: {
         userId,
         storeId,
+        addressId,
         orderNumber: uuid(),
-        addressId: 'TEMP_ADDRESS_ID', // Replace with actual address ID logic
-        orderStatus, // Default status for manual orders
+        orderStatus: orderStatus || 'PENDING', // Default status for manual orders
         paymentMethod: 'MANUAL', // Payment method for manual transactions
-        paymentProof: uploadResult?.secure_url, // Save the file URL
+        paymentProof: uploadResult.secure_url, // Save the file URL
         paymentProofTime: new Date(),
         paymentDueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Example: 7 days from now
         shippingMethod,
@@ -143,8 +175,8 @@ export async function createOrderManual(req: Request, res: Response) {
 
     res.status(201).json({ added: addOrderItemToOrder, addCartToOrderItem });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'problem in internal server' });
+    console.error('Error in createOrderManual:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
 

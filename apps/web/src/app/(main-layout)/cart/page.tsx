@@ -1,12 +1,41 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function Cart() {
   const [order, setOrder] = useState(1);
   const [price, setPrice] = useState(0);
   const [erase, setErase] = useState(false);
+
+  useEffect(() => {
+    async function getCart() {
+      try {
+        const response = await axios.get('http://localhost:8000/api/v1/orders');
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    getCart();
+  }, []);
+
+  // useEffect(() => {
+  //   async function postOrders() {
+  //     try {
+  //       const response = await axios.post('http://localhost:8000/api/v1/orders',{
+  //         //must be filled
+  //       });
+  //       const data = response.data;
+
+  //       console.log(data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  // },[])
 
   function handlePlus() {
     setOrder(order + 1);
@@ -42,7 +71,7 @@ export default function Cart() {
               {/* Single Product Card */}
               <div className="flex items-center justify-between">
                 {/* Image - Always on the left */}
-                <div className="relative flex-shrink-0 mr-4 w-28 h-28">
+                <div className="relative flex-shrink-0 mr-7 w-32 h-32">
                   <Image
                     src={'/apple.jpg'}
                     fill
@@ -53,6 +82,7 @@ export default function Cart() {
 
                 {/* Product details - Centered and takes available space */}
                 <div className="flex-grow flex flex-col gap-2">
+                  <h4 className="text-sm font-bold">F Store</h4>
                   <h2 className="text-lg font-semibold">Tomatos</h2>
                   <p className="text-sm text-gray-600">x2</p>
                   <div className="flex items-center mt-3">
@@ -96,7 +126,7 @@ export default function Cart() {
                 Please look for items in our store.
               </p>
               <Link
-                href="/store"
+                href="/"
                 className="text-lime-600 hover:underline mt-4 inline-block"
               >
                 Go to Store
@@ -121,7 +151,7 @@ export default function Cart() {
               disabled={erase}
             >
               <Link href={'/checkout'} className="block w-full">
-                Checkout
+                Go To Checkout
               </Link>
             </button>
           </div>

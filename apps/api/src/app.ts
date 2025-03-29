@@ -10,6 +10,7 @@ import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
 import orderRouter from './routers/order-router.js';
 import cartRouter from './routers/cart-router.js';
+import voucherRouter from './routers/voucher-router.js';
 import adminRoutes from './routers/admin-routes.js';
 import cookieParser from 'cookie-parser';
 import userRouter from './routers/user-router.js';
@@ -34,6 +35,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/vouchers', voucherRouter);
 app.use('/api/v1/users', userRouter);
 
 app.use(notFoundMiddleware);

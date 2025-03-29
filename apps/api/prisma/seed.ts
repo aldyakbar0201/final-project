@@ -111,6 +111,12 @@ async function main() {
 
   const categoryList = await prisma.category.findMany();
 
+  const cartItemList = await prisma.cartItem.findMany();
+
+  console.log('categoryList', categoryList);
+  console.log('cartItemList', cartItemList);
+  console.log('storeList', storeList);
+
   // Create Products
   await prisma.product.createMany({
     data: [
@@ -119,6 +125,7 @@ async function main() {
         description: 'High performance laptop',
         price: 1500.0,
         categoryId: categoryList[0].id,
+        cartItemId: cartItemList[0].id,
         storeId: storeList[0].id,
       },
       {
@@ -126,6 +133,7 @@ async function main() {
         description: 'Latest model smartphone',
         price: 800.0,
         categoryId: categoryList[0].id,
+        cartItemId: cartItemList[0].id,
         storeId: storeList[0].id,
       },
       {
@@ -133,6 +141,7 @@ async function main() {
         description: 'Fresh apples',
         price: 2.0,
         categoryId: categoryList[1].id,
+        cartItemId: cartItemList[0].id,
         storeId: storeList[1].id,
       },
     ],

@@ -48,8 +48,8 @@ enum OrderStatus {
 }
 
 enum PaymentMethod {
-  BANK_TRANSFER
-  PAYMENT_GATEWAY
+  Midtrans
+  Manual
 }
 
 // enum PaymentStatus {
@@ -139,6 +139,7 @@ model Store {
   SalesReport SalesReport[] // Relasi balik ke SalesReport
   StockReport StockReport[] // Relasi balik ke StockReport
   Order       Order[]
+  Voucher     Voucher[]
 }
 
 // Tabel Produk
@@ -149,18 +150,20 @@ model Product {
   price       Float
   categoryId  Int
   storeId     Int
+  cartItemId  Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   Category     Category       @relation(fields: [categoryId], references: [id])
   Store        Store          @relation(fields: [storeId], references: [id])
+  CartItem     CartItem       @relation(fields: [cartItemId], references: [id])
   Stock        Stock[]
   Discount     Discount[]
   SalesReport  SalesReport[] // Relasi balik ke SalesReport
   StockReport  StockReport[] // Relasi balik ke StockReport
-  CartItem     CartItem[]
   OrderItem    OrderItem[]
   ProductImage ProductImage[]
+  Voucher      Voucher[]
 }
 
 model ProductImage {
@@ -222,10 +225,17 @@ model Discount {
 }
 
 model Voucher {
-  id    Int          @id @default(autoincrement())
-  code  String
-  type  DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
-  value Float
+  id        Int         @id @default(autoincrement())
+  code      String
+  type      VoucherType
+  value     Float
+  productId Int?
+  storeId   Int?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  Product Product? @relation(fields: [productId], references: [id])
+  Store   Store?   @relation(fields: [storeId], references: [id])
 }
 
 model DiscountReport {
@@ -291,8 +301,9 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Cart    Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  Product Product[]
+  // Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 /**
@@ -302,8 +313,8 @@ model Order {
   id               String      @id @default(uuid())
   userId           Int
   storeId          Int
-  orderNumber      String      @unique
   addressId        String
+  orderNumber      String      @unique
   orderStatus      OrderStatus
   paymentMethod    String
   // paymentStatus    PaymentStatus
