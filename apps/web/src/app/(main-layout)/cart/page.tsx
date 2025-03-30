@@ -2,7 +2,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+
+// 1. kurang implementasi dari backendnya
 
 export default function Cart() {
   const [order, setOrder] = useState(1);
@@ -12,8 +13,9 @@ export default function Cart() {
   useEffect(() => {
     async function getCart() {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/orders');
-        console.log(response.data);
+        const response = await fetch('http://localhost:8000/api/v1/orders');
+        const data = await response.json();
+        console.log(data);
       } catch (error) {
         console.error(error);
       }

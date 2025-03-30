@@ -209,8 +209,9 @@ model StockLog {
 // Tabel Diskon
 model Discount {
   id           Int          @id @default(autoincrement())
-  productId    Int
-  storeId      Int
+  productId    Int?
+  storeId      Int?
+  code         String // Kode diskon
   type         DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
   value        Float // Nilai diskon (persentase atau nominal)
   minPurchase  Float? // Minimal pembelian untuk diskon
@@ -219,8 +220,8 @@ model Discount {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  Product        Product          @relation(fields: [productId], references: [id])
-  Store          Store            @relation(fields: [storeId], references: [id])
+  Product        Product?         @relation(fields: [productId], references: [id])
+  Store          Store?           @relation(fields: [storeId], references: [id])
   DiscountReport DiscountReport[]
 }
 

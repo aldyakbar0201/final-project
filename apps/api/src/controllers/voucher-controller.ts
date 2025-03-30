@@ -16,7 +16,7 @@ export const createVoucher = async (req: Request, res: Response) => {
     res.status(201).json({ created: voucher });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'problem in internal server' });
+    res.status(500).json({ error: error });
   }
 };
 

@@ -1,52 +1,37 @@
 'use client';
 
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 export default function CreateVoucherPage() {
-  const { register, handleSubmit } = useForm();
+  const { register } = useForm();
 
-  useEffect(() => {
-    async function CreateVoucher() {
-      try {
-        // const response = await axios.post(
-        //   'http://localhost:8000/api/v1/vouchers',
-        //   {
-        //     code: 'code',
-        //     type: 'type',
-        //     value: 'value',
-        //   },
-        // );
-        // const data = response.data;
+  async function CreateVoucher(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-        const response = await fetch('http://localhost:8000/api/v1/vouchers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code: 'code',
-            type: 'type',
-            value: 'value',
-          }),
-        });
-        const data = await response.json();
-        console.log(data);
-      } catch (error) {
-        console.error(error);
-      }
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/vouchers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: 'code',
+          type: 'type',
+          value: 'value',
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
     }
-
-    CreateVoucher();
-  }, []);
+  }
 
   return (
     <section className="max-w-md mx-auto my-10 p-6 bg-white rounded-lg">
       <h1 className="text-2xl font-bold text-lime-700 mb-6">Create Voucher</h1>
-      <form
-        onSubmit={handleSubmit((data) => console.log(data))}
-        className="space-y-7"
-      >
+      <form onSubmit={CreateVoucher} className="space-y-7">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Code
@@ -86,7 +71,6 @@ export default function CreateVoucherPage() {
 
         <button
           type="submit"
-          onSubmit={handleSubmit((data) => console.log(data))}
           className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-lime-600 hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500 transition-colors duration-200"
         >
           Create Voucher
