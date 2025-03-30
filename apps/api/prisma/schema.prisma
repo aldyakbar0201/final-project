@@ -60,18 +60,18 @@ enum PaymentMethod {
 
 // Tabel User
 model User {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   name           String
-  email          String   @unique
-  emailConfirmed Boolean  @default(false)
+  email          String    @unique
+  emailConfirmed Boolean   @default(false)
   password       String?
-  role           Role     @default(CUSTOMER)
-  provider       Provider
+  role           Role      @default(CUSTOMER)
+  provider       Provider?
   userPhoto      String?
   address        String? //Buat model address
-  referralCode   String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  referralCode   String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   Cart               Cart?
   Order              Order[]
