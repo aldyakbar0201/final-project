@@ -1,4 +1,4 @@
-// Profile.tsx
+// src/app/(main-layout)/user-profile/page.tsx
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -7,9 +7,8 @@ import SidebarUser from '@/component/sidebar-profile';
 export default function Profile() {
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const [profilePicture, setProfilePicture] = useState('/default-profile.jpg');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const router = useRouter();
-  console.log(setProfilePicture);
 
   const fetchUserInfo = useCallback(async () => {
     try {
@@ -17,12 +16,16 @@ export default function Profile() {
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch user info');
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch user info: ${response.status} - ${errorText}`,
+        );
       }
       const data = await response.json();
       if (data && typeof data === 'object') {
         setName(data.name || '');
         setEmail(data.email);
+        setProfilePicture(data.profilePicture || null);
       } else {
         console.error('Unexpected data structure:', data);
       }
@@ -53,6 +56,15 @@ export default function Profile() {
   const handleSaveChanges = async () => {
     // Implement save changes logic here
     console.log('Saving changes:', { name, email });
+    // For now, just log the changes
+  };
+
+  const handleProfilePictureChange = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePicture(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -63,6 +75,7 @@ export default function Profile() {
           onLogout={handleLogout}
           name={name}
           profilePicture={profilePicture}
+          onProfilePictureChange={handleProfilePictureChange}
         />
         <div className="flex-1 px-6 bg-white">
           <h3 className="text-lg font-semibold mb-4">Account Details</h3>

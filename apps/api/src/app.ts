@@ -14,7 +14,6 @@ import adminRoutes from './routers/admin-routes.js';
 import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
 
-
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
 
@@ -22,7 +21,6 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true })); //origin:
 
 app.use(express.json());
 app.use(cookieParser()); // Tambahkan sebelum route
-
 
 app.get('/api/v1/status', (_req: Request, res: Response) => {
   res.status(200).json({ message: 'API is running' });
