@@ -22,7 +22,7 @@ export default function ProductList() {
   const [loading, setLoading] = useState(true); // State to manage loading state
   const [error, setError] = useState<Error | null>(null); // State to manage any errors
   const [searchQuery, setSearchQuery] = useState(''); // State to manage search query
-  const [showAll, setShowAll] = useState(true); // State to manage show all products
+  const [showAll, setShowAll] = useState(false); // State to manage show all products
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -80,11 +80,14 @@ export default function ProductList() {
   }
 
   // Filter products based on search query
-  const filteredProducts = showAll
-    ? products
-    : products.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  // Limit the number of products displayed to 6
+  const displayedProducts = showAll
+    ? filteredProducts
+    : filteredProducts.slice(0, 6);
 
   return (
     <section className="py-12">
@@ -118,18 +121,14 @@ export default function ProductList() {
           >
             Featured Products
           </motion.h2>
-          <button
-            className={`px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 ${
-              showAll ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            onClick={() => {
-              setSearchQuery('');
-              setShowAll(true);
-            }}
-            disabled={showAll}
-          >
-            Show All
-          </button>
+          {filteredProducts.length > 6 && !showAll && (
+            <a
+              href="/explore"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Show All
+            </a>
+          )}
         </div>
 
         <motion.div
@@ -138,8 +137,8 @@ export default function ProductList() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+          {displayedProducts.length > 0 ? (
+            displayedProducts.map((product) => (
               <motion.div
                 key={product.id}
                 className="bg-white p-6 rounded-lg shadow-md"
