@@ -8,7 +8,7 @@ export async function getProducts(
   next: NextFunction,
 ) {
   const searchQuery =
-    typeof req.query.search === 'string' ? req.query.search : ''; // Ensure searchQuery is a string
+    typeof req.query.search === 'string' ? req.query.search : ''; // Ensure searchQuery is a strings
 
   try {
     const products = await prisma.product.findMany({
