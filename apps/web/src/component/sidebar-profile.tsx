@@ -60,7 +60,7 @@ export default function SidebarUser({
       <ul className="space-y-2">
         <li>
           <Link
-            href="/profile/address"
+            href="/user-profile/address"
             className="text-gray-700 hover:text-blue-500"
           >
             Address
