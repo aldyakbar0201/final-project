@@ -13,6 +13,7 @@ import cartRouter from './routers/cart-router.js';
 import adminRoutes from './routers/admin-routes.js';
 import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
+import resetPasswordRouter from './routers/reset-password-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -36,6 +37,9 @@ app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
+
+//reset password
+app.use('/api/v1/reset-password', resetPasswordRouter);
 
 //not found and error
 app.use(notFoundMiddleware);
