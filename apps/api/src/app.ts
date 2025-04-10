@@ -10,10 +10,11 @@ import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
 import orderRouter from './routers/order-router.js';
 import cartRouter from './routers/cart-router.js';
-import adminRoutes from './routers/admin-routes.js';
+import adminRoutes from './routers/admin-router.js';
 import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
 import resetPasswordRouter from './routers/reset-password-router.js';
+import uploadPhotoRouter from './routers/upload-user-photo-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -37,6 +38,9 @@ app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
+
+//upload user photo
+app.use('/api/v1/upload-photo', uploadPhotoRouter);
 
 //reset password
 app.use('/api/v1/reset-password', resetPasswordRouter);
