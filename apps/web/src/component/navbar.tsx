@@ -8,7 +8,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
   const { data } = useSession();
   console.log(data);
-  console.log(isLoggedIn);
+  // console.log(isLoggedIn);
 
   useEffect(() => {
     // Fetch user authentication status

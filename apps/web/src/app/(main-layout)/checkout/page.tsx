@@ -1,17 +1,122 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Ensures Leaflet styles are loaded
+import { useForm } from 'react-hook-form';
+
+// 1. disini yang masih kurang proses midtrans sama manualnya
+// 2. belum juga implementasi mekanisme untuk voucher dan discount (applyVoucher & applyDiscount)
+// 3. belum ada geocodingnya untuk RajaOnkir
+
+interface SnapWindow extends Window {
+  snap?: { embed: (token: string, options: { embedId: string }) => void };
+}
+
+interface Voucher {
+  id: number;
+  code: string;
+  type: 'PRODUCT_SPECIFIC' | 'TOTAL_PURCHASE' | 'SHIPPING';
+  value: number;
+  productId?: number | null;
+  storeId?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Discount {
+  id: number;
+  productId: number;
+  storeId: number;
+  code: string;
+  type: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  value: number;
+  minPurchase: number;
+  buyOneGetOne: boolean;
+  maxDiscount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Checkout() {
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const { register } = useForm();
+
   const mapRef = useRef<L.Map | null>(null); // Store map instance
   const mapContainerRef = useRef<HTMLDivElement | null>(null); // Store map container
+  const markerRef = useRef<L.Marker | null>(null); // Store marker instance
 
+  /* -------------------------------------------------------------------------- */
+  /*                           GET VOUCHER & DISCOUNTS                          */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    async function getVouchers() {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/vouchers');
+        const data = await response.json();
+        setVouchers(data.vouchers);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    getVouchers();
+  }, []);
+
+  useEffect(() => {
+    async function getDiscounts() {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/discounts');
+        const data = await response.json();
+        setDiscounts(data.discounts);
+        // console.log(data.discounts);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    getDiscounts();
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                 POST TO DB                                 */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    async function postOrders() {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            // Add your order data here
+            // For example:
+            // productId: 1,
+            // quantity: 2,
+            // totalPrice: 200,
+          }),
+        });
+        console.log(response);
+
+        // console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    postOrders();
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                 MAP LEAFLET                                */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
     if (mapRef.current || !mapContainerRef.current) return; // Prevent multiple initializations
 
-    // Initialize the map
+    // Initialize the map with default coordinates (will be updated if geolocation succeeds)
     const map = L.map(mapContainerRef.current).setView([0.7893, 113.9213], 5);
     mapRef.current = map; // Store map instance
 
@@ -27,11 +132,58 @@ export default function Checkout() {
       iconSize: [38, 95],
       iconAnchor: [22, 94],
       popupAnchor: [-3, -76],
-      shadowAnchor: [6, 63],
       shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+      shadowSize: [50, 64],
+      shadowAnchor: [4, 62],
     });
 
-    L.marker([0.7893, 113.9213], { icon: leafletIcon }).addTo(map);
+    // Create a draggable marker (initial position will be updated)
+    const marker = L.marker([0.7893, 113.9213], {
+      icon: leafletIcon,
+      draggable: true, // Make the marker draggable
+    }).addTo(map);
+
+    markerRef.current = marker;
+
+    // Add event listener for when the marker is moved
+    marker.on('dragend', (event) => {
+      const marker = event.target;
+      const position = marker.getLatLng();
+      console.log(`Marker moved to: ${position.lat}, ${position.lng}`);
+    });
+
+    // Get user's current position using browser's geolocation API
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // console.log(`User location: ${latitude}, ${longitude}`);
+
+          // Update map view to user's location with street-level zoom (zoom level 15-18 is good for streets)
+          map.setView([latitude, longitude], 17);
+
+          // Update marker position to user's location
+          marker.setLatLng([latitude, longitude]);
+
+          // Log initial marker position
+          // console.log(
+          // `Initial marker position set to user location: ${latitude}, ${longitude}`,
+          // );
+        },
+        (error) => {
+          console.error('Error getting user location:', error.message);
+          // console.log('Using default coordinates instead');
+        },
+        {
+          enableHighAccuracy: true, // Request high accuracy results
+          timeout: 5000, // Wait up to 5 seconds for a position
+          maximumAge: 0, // Don't use cached position
+        },
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser');
+      console.error('Using default coordinates: 0.7893, 113.9213');
+    }
 
     setTimeout(() => {
       map.invalidateSize();
@@ -40,59 +192,170 @@ export default function Checkout() {
     return () => {
       map.remove();
       mapRef.current = null;
+      markerRef.current = null;
     };
   }, []);
 
+  /* -------------------------------------------------------------------------- */
+  /*                                 RAJA ONKIR                                 */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    async function getRajaOngkir() {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/v1/shippings/options?origin=55284&destination=11540&weight=5`,
+        );
+
+        const data = await response.json();
+        // console.log('response', data);
+        setShippingOptions(data.data.data);
+        // console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    getRajaOngkir();
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                SNAP MIDTRANS                               */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    const midtransClientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+    const script = document.createElement('script');
+    script.src = `https://app.sandbox.midtrans.com/snap/snap.js`;
+    script.setAttribute('data-client-key', midtransClientKey as string);
+
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                 SUBMIT DATA                                */
+  /* -------------------------------------------------------------------------- */
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/orders', {
+        // method: 'POST',
+        // headers: {
+        //   'Content-Type': 'application/json',
+        // },
+        // body: JSON.stringify({ itemId, quantity }),
+      });
+      const data = await response.json();
+
+      (window as SnapWindow).snap!.embed(data.data.transaction.token, {
+        embedId: 'snap-container',
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
-    <section className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 my-8">
+    <section className="max-w-md mx-auto bg-white rounded-lg  p-6 my-8">
       <h2 className="text-2xl font-bold text-lime-600 mb-6 pb-3 border-b border-gray-200">
         Order Summary
       </h2>
 
-      <div className="space-y-5">
-        {/* Checkout Items */}
-        <div className="flex flex-col py-2">
-          <span className="text-gray-700 font-medium mb-2">Location:</span>
-          {/* Map container using useRef */}
-          <div
-            ref={mapContainerRef}
-            className="w-full h-[300px] rounded-lg shadow-md border border-gray-200 overflow-hidden"
-          ></div>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-5">
+          {/* Checkout Items */}
+          <div className="flex flex-col py-2">
+            <span className="text-gray-700 font-medium mb-2">Location:</span>
+            {/* Map container using useRef */}
+            <div
+              ref={mapContainerRef}
+              className="w-full h-[300px] rounded-lg  border border-gray-200 overflow-hidden"
+            ></div>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+            <label className="text-gray-700 font-medium">Delivery:</label>
+            <select
+              {...register('delivery')}
+              className="text-gray-800 hover:text-lime-600 cursor-pointer transition-colors border-2 border-gray-300 rounded-lg p-2 w-40"
+            >
+              <option value="pick delivery" disabled>
+                -- Select a Delivery --
+              </option>
+              {shippingOptions.map(
+                (option: { name: string; cost: number }, index) => (
+                  <option key={index} value={option.name}>
+                    {option.name} - {option.cost}
+                  </option>
+                ),
+              )}
+            </select>
+          </div>
+
+          {/* ??? */}
+          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+            <label className="text-gray-700 font-medium">Payment:</label>
+            <select
+              {...register('paymentType')}
+              className="border-2 border-gray-300 rounded-lg p-2 w-40"
+            >
+              <option value="Midtrans">Midtrans</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+            <label className="text-gray-700 font-medium">Voucher:</label>
+            <select
+              {...register('voucher')}
+              name="voucher"
+              className="border-2 border-gray-300 rounded-lg p-2 w-40"
+            >
+              <option value="pick voucher" disabled>
+                -- Select a Voucher --
+              </option>
+              {vouchers?.map((voucher: Voucher) => (
+                <option key={voucher.id} value={voucher.code}>
+                  {voucher.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+            <label className="text-gray-700 font-medium">Discount:</label>
+            <select
+              {...register('discount')}
+              name="discount"
+              className="border-2 border-gray-300 rounded-lg p-2 w-40"
+            >
+              <option value="pick discount" disabled>
+                -- Select a Discount --
+              </option>
+              {discounts?.map((discount: Discount) => (
+                <option key={discount.id} value={discount.code}>
+                  {discount.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-between items-center pt-3">
+            <span className="text-gray-800 font-bold text-lg">Total Cost:</span>
+            <span className="text-xl font-bold text-lime-600">$13.97</span>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center py-3 border-b border-gray-100">
-          <span className="text-gray-700 font-medium">Delivery:</span>
-          <span className="text-gray-800 hover:text-lime-600 cursor-pointer transition-colors">
-            Select Method →
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center py-3 border-b border-gray-100">
-          <span className="text-gray-700 font-medium">Payment:</span>
-          <span className="text-gray-800 font-medium">QRIS</span>
-        </div>
-
-        <div className="flex justify-between items-center py-3 border-b border-gray-100">
-          <span className="text-gray-700 font-medium">Voucher:</span>
-          <span className="text-gray-800 hover:text-lime-600 cursor-pointer transition-colors">
-            Pick Voucher →
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center py-3 border-b border-gray-100">
-          <span className="text-gray-700 font-medium">Discount:</span>
-          <span className="text-gray-800">-</span>
-        </div>
-
-        <div className="flex justify-between items-center pt-3">
-          <span className="text-gray-800 font-bold text-lg">Total Cost:</span>
-          <span className="text-xl font-bold text-lime-600">$13.97</span>
-        </div>
-      </div>
-
-      <button className="w-full mt-8 bg-lime-600 text-white py-3 rounded-lg font-medium hover:bg-lime-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-opacity-50 shadow-md">
-        Proceed to Payment
-      </button>
+        <button
+          type="submit"
+          className="w-full mt-8 bg-lime-600 text-white py-3 rounded-lg font-medium hover:bg-lime-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-opacity-50 "
+        >
+          Proceed to Payment
+        </button>
+      </form>
 
       <p className="text-center text-gray-500 text-sm mt-4">
         Secure payment processed by our trusted partners

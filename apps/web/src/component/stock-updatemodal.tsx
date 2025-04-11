@@ -15,7 +15,7 @@ export default function StockUpdateModal({
 
   const handleUpdateStock = () => {
     // Logika untuk memperbarui stok dan membuat jurnal
-    console.log(`Memperbarui stok ${product.name} sebesar ${change}`);
+    // console.log(`Memperbarui stok ${product.name} sebesar ${change}`);
     onClose();
   };
 

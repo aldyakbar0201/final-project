@@ -5,11 +5,64 @@ export async function getCartItems(_req: Request, res: Response) {
   try {
     const cartItems = await prisma.cart.findMany({
       include: {
-        CartItem: true,
+        CartItem: {
+          include: {
+            Product: {
+              include: { ProductImage: true },
+            },
+          },
+        },
       },
     });
 
     res.status(200).json(cartItems);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'problem in internal server' });
+  }
+}
+
+export async function getCurrentUserCart(_req: Request, res: Response) {
+  try {
+    const cartItems = await prisma.cart.findUnique({
+      where: { userId: 80 },
+      include: {
+        CartItem: {
+          include: {
+            Product: {
+              include: {
+                ProductImage: { select: { imageUrl: true } },
+                Store: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json(cartItems);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'problem in internal server' });
+  }
+}
+
+export async function getCartItemById(req: Request, res: Response) {
+  try {
+    const { cartItemId } = req.params;
+    const cartItem = await prisma.cartItem.findUnique({
+      where: { id: Number(cartItemId) },
+      include: {
+        Product: true,
+      },
+    });
+
+    if (!cartItem) {
+      res.status(404).json({ error: 'cart item not found' });
+      return;
+    }
+
+    res.status(200).json(cartItem);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'problem in internal server' });
