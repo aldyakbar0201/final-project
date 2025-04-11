@@ -166,15 +166,20 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       role: existingUser.role,
     };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY as string, {
-      expiresIn: '1h',
+      expiresIn: '1d',
     });
 
     res
       .cookie('accessToken', token, {
         httpOnly: true,
         sameSite: 'lax',
-        secure: false,
-        domain: 'localhost',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? 'frshbasket.shop'
+            : 'localhost',
+        maxAge: 3600000,
       })
       .status(200)
       .json({ ok: true, message: 'Login success' });
@@ -201,13 +206,13 @@ export async function getCurrentUser(
   next: NextFunction,
 ) {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: 'Unauthorized' });
+    const userEmail = req.user?.email;
+    if (!userEmail) {
+      res.status(401).json({ message: 'Unauthorized Could not find user' });
       return;
     }
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: userEmail },
     });
 
     if (!user) {

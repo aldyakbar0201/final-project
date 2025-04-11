@@ -22,7 +22,7 @@ const upload = multer({
       cb(null, false);
     }
   },
-  limits: { fileSize: 1000000 },
+  limits: { fileSize: 2000000 },
 });
 
 export default upload;

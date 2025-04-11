@@ -78,13 +78,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (!token) {
         throw new Error('Missing JWT token');
       }
-      return jwt.sign(token, 'randomsecretkey');
+      return jwt.sign(token, process.env.JWT_SECRET_KEY as string);
     },
     decode: ({ token }) => {
       if (!token) {
         throw new Error('Missing JWT token');
       }
-      return jwt.verify(token, 'randomsecretkey') as JWT;
+      return jwt.verify(token, process.env.JWT_SECRET_KEY as string) as JWT;
     },
   },
   session: {
