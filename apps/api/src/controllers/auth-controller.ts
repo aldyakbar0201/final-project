@@ -152,7 +152,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const isValidPassword = await compare(password, existingUser.password);
+    const isValidPassword = compare(password, existingUser.password);
 
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });

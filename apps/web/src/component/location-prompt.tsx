@@ -46,14 +46,13 @@ const LocationPrompt = () => {
   }, []);
 
   return (
-    <section className="mx-8 mt-10 p-6">
+    <section className="container mx-auto px-4 py-3">
       <motion.h2
         className="text-2xl font-bold mb-4 flex items-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <FaMapMarkerAlt className="mr-2 text-blue-500" />
         Your Location
       </motion.h2>
       {locationError ? (

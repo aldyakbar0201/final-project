@@ -7,51 +7,22 @@ export async function getProducts(
   res: Response,
   next: NextFunction,
 ) {
-  const searchQuery = req.query.search || ''; // Ambil parameter search dari query string
+  const searchQuery =
+    typeof req.query.search === 'string' ? req.query.search : ''; // Ensure searchQuery is a strings
 
   try {
     const products = await prisma.product.findMany({
       where: {
         name: {
-          contains: searchQuery.toString(), // Cari nama produk yang mengandung query
-          mode: 'insensitive', // Membuat pencarian tidak peka huruf besar/kecil
+          contains: searchQuery, // Use the search query to filter products by name
+          mode: 'insensitive', // Optional: make the search case-insensitive
         },
       },
-      include: {
-        ProductImage: true,
-        Category: true,
-        Store: true,
-        Stock: { include: { store: true } }, // Menampilkan stok per toko
-      },
     });
 
-    const productList = products.map((product) => {
-      const totalStock = product.Stock.reduce(
-        (sum, stock) => sum + stock.quantity,
-        0,
-      ); // Hitung stok total
-
-      return {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        images: product.ProductImage.map((img) => img.imageUrl),
-        category: product.Category.name,
-        store: product.Store.name,
-        isOutOfStock: totalStock === 0,
-        stocks: product.Stock.map((stock) => ({
-          storeId: stock.storeId,
-          storeName: stock.store.name,
-          quantity: stock.quantity,
-        })),
-      };
-    });
-
-    res.status(200).json(productList); // Kirimkan data produk yang sudah diolah
+    res.json(products); // Send the filtered products as a response
   } catch (error) {
-    console.error('Error fetching products:', error);
-    next(error);
+    next(error); // Pass any errors to the next middleware
   }
 }
 

@@ -12,10 +12,12 @@ import orderRouter from './routers/order-router.js';
 import cartRouter from './routers/cart-router.js';
 import voucherRouter from './routers/voucher-router.js';
 import discountRouter from './routers/discount-router.js';
-import adminRoutes from './routers/admin-routes.js';
+import shippingRouter from './routers/shipping-router.js';
+import adminRoutes from './routers/admin-router.js';
 import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
-import shippingRouter from './routers/shipping-router.js';
+import resetPasswordRouter from './routers/reset-password-router.js';
+import uploadPhotoRouter from './routers/upload-user-photo-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -42,6 +44,12 @@ app.use('/api/v1/vouchers', voucherRouter);
 app.use('/api/v1/discounts', discountRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/shippings', shippingRouter);
+
+//upload user photo
+app.use('/api/v1/upload-photo', uploadPhotoRouter);
+
+//reset password
+app.use('/api/v1/reset-password', resetPasswordRouter);
 
 //not found and error
 app.use(notFoundMiddleware);
