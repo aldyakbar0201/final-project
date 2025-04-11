@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../configs/prisma.js';
+import cloudinary from '../configs/cloudinary.js';
+import fs from 'fs/promises';
 
 export async function uploadUserImage(
   req: Request,
@@ -18,10 +20,15 @@ export async function uploadUserImage(
       return;
     }
 
+    const cloudinaryData = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'blog/images',
+    });
+    fs.unlink(req.file.path);
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
-        userPhoto: req.file.path, // Save the path of the uploaded file
+        userPhoto: cloudinaryData.secure_url, // Save the path of the uploaded file
       },
     });
 
