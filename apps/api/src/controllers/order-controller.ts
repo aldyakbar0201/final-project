@@ -4,9 +4,41 @@ import { MidtransClient } from 'midtrans-node-client';
 import cloudinary from '../configs/cloudinary.js';
 import { v4 as uuid } from 'uuid';
 
-export async function getOrders(_req: Request, res: Response) {
+/* -------------------------------------------------------------------------- */
+/*                                FOR CUSTOMER                                */
+/* -------------------------------------------------------------------------- */
+export async function getOrderById(req: Request, res: Response) {
   try {
-    const orders = await prisma.order.findMany();
+    const orders = await prisma.order.findUnique({
+      where: {
+        id: req.params.id,
+      },
+      include: {
+        Items: {
+          include: {
+            Product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                ProductImage: {
+                  select: {
+                    imageUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
     res.status(200).json(orders);
   } catch (error) {
     console.error(error);
@@ -184,6 +216,11 @@ export async function updateOrderStatus(req: Request, res: Response) {
   try {
     const { orderId, orderStatus } = req.body;
 
+    if (!orderId || !orderStatus) {
+      res.status(400).json({ error: 'orderId and orderStatus are required' });
+      return;
+    }
+
     const updateStatus = await prisma.order.update({
       where: {
         id: orderId,
@@ -211,6 +248,30 @@ export async function deleteOrder(req: Request, res: Response) {
     });
 
     res.status(200).json({ deleted: deleteOrder });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'problem in internal server' });
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  FOR ADMIN                                 */
+/* -------------------------------------------------------------------------- */
+
+export async function validatePayment(req: Request, res: Response) {
+  try {
+    const { orderId, orderStatus } = req.body;
+
+    const updatePaymentStatus = await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        orderStatus,
+      },
+    });
+
+    res.status(200).json({ updated: updatePaymentStatus });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'problem in internal server' });

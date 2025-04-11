@@ -52,7 +52,7 @@ export default function Profile() {
 
   const handleSaveChanges = async () => {
     // Implement save changes logic here
-    console.log('Saving changes:', { name, email });
+    // console.log('Saving changes:', { name, email });
   };
 
   return (

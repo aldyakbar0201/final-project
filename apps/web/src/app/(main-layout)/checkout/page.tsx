@@ -41,10 +41,12 @@ interface Discount {
 export default function Checkout() {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [shippingOptions, setShippingOptions] = useState([]);
   const { register } = useForm();
 
   const mapRef = useRef<L.Map | null>(null); // Store map instance
   const mapContainerRef = useRef<HTMLDivElement | null>(null); // Store map container
+  const markerRef = useRef<L.Marker | null>(null); // Store marker instance
 
   /* -------------------------------------------------------------------------- */
   /*                           GET VOUCHER & DISCOUNTS                          */
@@ -69,7 +71,7 @@ export default function Checkout() {
         const response = await fetch('http://localhost:8000/api/v1/discounts');
         const data = await response.json();
         setDiscounts(data.discounts);
-        console.log(data.discounts);
+        // console.log(data.discounts);
       } catch (error) {
         console.error(error);
       }
@@ -98,7 +100,6 @@ export default function Checkout() {
           }),
         });
         console.log(response);
-        // const data = response.data;
 
         // console.log(data);
       } catch (error) {
@@ -115,7 +116,7 @@ export default function Checkout() {
   useEffect(() => {
     if (mapRef.current || !mapContainerRef.current) return; // Prevent multiple initializations
 
-    // Initialize the map
+    // Initialize the map with default coordinates (will be updated if geolocation succeeds)
     const map = L.map(mapContainerRef.current).setView([0.7893, 113.9213], 5);
     mapRef.current = map; // Store map instance
 
@@ -131,11 +132,58 @@ export default function Checkout() {
       iconSize: [38, 95],
       iconAnchor: [22, 94],
       popupAnchor: [-3, -76],
-      shadowAnchor: [6, 63],
       shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
+      shadowSize: [50, 64],
+      shadowAnchor: [4, 62],
     });
 
-    L.marker([0.7893, 113.9213], { icon: leafletIcon }).addTo(map);
+    // Create a draggable marker (initial position will be updated)
+    const marker = L.marker([0.7893, 113.9213], {
+      icon: leafletIcon,
+      draggable: true, // Make the marker draggable
+    }).addTo(map);
+
+    markerRef.current = marker;
+
+    // Add event listener for when the marker is moved
+    marker.on('dragend', (event) => {
+      const marker = event.target;
+      const position = marker.getLatLng();
+      console.log(`Marker moved to: ${position.lat}, ${position.lng}`);
+    });
+
+    // Get user's current position using browser's geolocation API
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // console.log(`User location: ${latitude}, ${longitude}`);
+
+          // Update map view to user's location with street-level zoom (zoom level 15-18 is good for streets)
+          map.setView([latitude, longitude], 17);
+
+          // Update marker position to user's location
+          marker.setLatLng([latitude, longitude]);
+
+          // Log initial marker position
+          // console.log(
+          // `Initial marker position set to user location: ${latitude}, ${longitude}`,
+          // );
+        },
+        (error) => {
+          console.error('Error getting user location:', error.message);
+          // console.log('Using default coordinates instead');
+        },
+        {
+          enableHighAccuracy: true, // Request high accuracy results
+          timeout: 5000, // Wait up to 5 seconds for a position
+          maximumAge: 0, // Don't use cached position
+        },
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser');
+      console.error('Using default coordinates: 0.7893, 113.9213');
+    }
 
     setTimeout(() => {
       map.invalidateSize();
@@ -144,7 +192,30 @@ export default function Checkout() {
     return () => {
       map.remove();
       mapRef.current = null;
+      markerRef.current = null;
     };
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                 RAJA ONKIR                                 */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    async function getRajaOngkir() {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/v1/shippings/options?origin=55284&destination=11540&weight=5`,
+        );
+
+        const data = await response.json();
+        // console.log('response', data);
+        setShippingOptions(data.data.data);
+        // console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    getRajaOngkir();
   }, []);
 
   /* -------------------------------------------------------------------------- */
@@ -171,11 +242,11 @@ export default function Checkout() {
 
     try {
       const response = await fetch('http://localhost:8000/api/v1/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId, quantity }),
+        // method: 'POST',
+        // headers: {
+        //   'Content-Type': 'application/json',
+        // },
+        // body: JSON.stringify({ itemId, quantity }),
       });
       const data = await response.json();
 
@@ -211,7 +282,16 @@ export default function Checkout() {
               {...register('delivery')}
               className="text-gray-800 hover:text-lime-600 cursor-pointer transition-colors border-2 border-gray-300 rounded-lg p-2 w-40"
             >
-              <option value=""></option>
+              <option value="pick delivery" disabled>
+                -- Select a Delivery --
+              </option>
+              {shippingOptions.map(
+                (option: { name: string; cost: number }, index) => (
+                  <option key={index} value={option.name}>
+                    {option.name} - {option.cost}
+                  </option>
+                ),
+              )}
             </select>
           </div>
 

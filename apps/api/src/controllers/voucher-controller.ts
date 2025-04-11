@@ -10,6 +10,8 @@ export const createVoucher = async (req: Request, res: Response) => {
         code,
         type,
         value,
+        storeId: req?.user?.storeId || 1413,
+        productId: type === 'PRODUCT_SPECIFIC' ? req.body.productId : null,
       },
     });
 

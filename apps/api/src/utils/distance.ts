@@ -14,11 +14,11 @@ export function calculateDistance(
   );
 }
 
-console.log(
-  calculateDistance(
-    -6.171866327429566,
-    106.82134799481388,
-    -6.270565,
-    106.75955,
-  ),
-);
+// console.log(
+//   calculateDistance(
+//     -6.171866327429566,
+//     106.82134799481388,
+//     -6.270565,
+//     106.75955,
+//   ),
+// );

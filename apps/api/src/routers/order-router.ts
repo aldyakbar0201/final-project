@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  getOrders,
+  getOrderById,
   createOrderMidtrans,
   createOrderManual,
   updateOrderStatus,
@@ -10,11 +10,12 @@ import upload from '../middlewares/upload-middleware.js';
 
 const router = express.Router();
 
-router.route('/').get(getOrders).post(createOrderMidtrans);
+router.route('/').post(createOrderMidtrans);
 router
   .route('/manualPayment')
   .post(upload.single('paymentProof'), createOrderManual);
 router.route('/update-status').put(updateOrderStatus);
 router.route('/delete').delete(deleteOrder);
+router.route('/:id').get(getOrderById);
 
 export default router;

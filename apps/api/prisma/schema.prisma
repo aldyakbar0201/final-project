@@ -60,18 +60,18 @@ enum PaymentMethod {
 
 // Tabel User
 model User {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   name           String
-  email          String   @unique
-  emailConfirmed Boolean  @default(false)
+  email          String    @unique
+  emailConfirmed Boolean   @default(false)
   password       String?
-  role           Role     @default(CUSTOMER)
-  provider       Provider
+  role           Role      @default(CUSTOMER)
+  provider       Provider?
   userPhoto      String?
   address        String? //Buat model address
-  referralCode   String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  referralCode   String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   Cart               Cart?
   Order              Order[]
@@ -150,13 +150,11 @@ model Product {
   price       Float
   categoryId  Int
   storeId     Int
-  cartItemId  Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   Category     Category       @relation(fields: [categoryId], references: [id])
   Store        Store          @relation(fields: [storeId], references: [id])
-  CartItem     CartItem       @relation(fields: [cartItemId], references: [id])
   Stock        Stock[]
   Discount     Discount[]
   SalesReport  SalesReport[] // Relasi balik ke SalesReport
@@ -164,14 +162,15 @@ model Product {
   OrderItem    OrderItem[]
   ProductImage ProductImage[]
   Voucher      Voucher[]
+  CartItem     CartItem[]
 }
 
 model ProductImage {
   id        Int    @id @default(autoincrement())
-  productId String
+  productId Int
   imageUrl  String
 
-  Product Product @relation(fields: [id], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
 }
 
 // Tabel Kategori Produk
@@ -227,16 +226,16 @@ model Discount {
 
 model Voucher {
   id        Int         @id @default(autoincrement())
-  code      String
+  code      String      @unique
   type      VoucherType
   value     Float
   productId Int?
-  storeId   Int?
+  storeId   Int
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   Product Product? @relation(fields: [productId], references: [id])
-  Store   Store?   @relation(fields: [storeId], references: [id])
+  Store   Store    @relation(fields: [storeId], references: [id])
 }
 
 model DiscountReport {
@@ -302,9 +301,8 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Cart    Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  Product Product[]
-  // Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 /**
@@ -314,7 +312,7 @@ model Order {
   id               String      @id @default(uuid())
   userId           Int
   storeId          Int
-  addressId        String
+  addressId        Int
   orderNumber      String      @unique
   orderStatus      OrderStatus
   paymentMethod    String

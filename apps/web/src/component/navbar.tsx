@@ -8,10 +8,10 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
   const { data } = useSession();
   console.log(data);
-  console.log(isLoggedIn);
+  // console.log(isLoggedIn);
 
   useEffect(() => {
-    // Fetch user authentication status (this is just a placeholder)
+    // Fetch user authentication status
     const checkAuthStatus = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/v1/auth/me', {
@@ -30,6 +30,7 @@ export default function Navbar() {
 
     checkAuthStatus();
   }, []);
+
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -45,7 +46,7 @@ export default function Navbar() {
             <ShoppingCart className="w-6 h-6 mr-1" />
             <span className="sr-only">Cart</span>
           </Link>
-          {data ? (
+          {isLoggedIn ? (
             <Link href="/user-profile" className="flex items-center">
               <User className="w-6 h-6 mr-1" />
               <span className="sr-only">Profile</span>
