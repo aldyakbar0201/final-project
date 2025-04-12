@@ -11,7 +11,7 @@ import handlebars from 'handlebars';
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
-const { genSalt, hash, compare } = bcrypt;
+const { genSalt, hash } = bcrypt;
 
 export async function register(
   req: Request,
@@ -49,7 +49,7 @@ export async function register(
     });
 
     const confirmToken = crypto.randomBytes(20).toString('hex');
-    const confirmationLink = `http://localhost:8000/api/v1/auth/confirm-email?token=${confirmToken}`;
+    const confirmationLink = `http://localhost:3000/auth/user-onboarding?token=${confirmToken}`;
 
     await prisma.confirmToken.create({
       data: {
@@ -65,7 +65,7 @@ export async function register(
     const compiledTemplate = handlebars.compile(templateSource.toString());
     const htmlTemplate = compiledTemplate({
       name: name,
-      link: confirmationLink,
+      confirmationLink: confirmationLink,
     });
     const { data, error } = await resend.emails.send({
       from: 'Fresh Basket <onboarding@frshbasket.shop>',
@@ -152,7 +152,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const isValidPassword = compare(password, existingUser.password);
+    const isValidPassword = bcrypt.compareSync(password, existingUser.password);
 
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });
