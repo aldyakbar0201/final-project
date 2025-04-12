@@ -38,11 +38,11 @@ export async function requestResetPassword(
 
     // Generate reset password token
     const resetPasswordToken = crypto.randomBytes(20).toString('hex');
-    const confirmationLink = `hhtp://localhost:8000/api/v1/reset-password/confirm?token=${resetPasswordToken}`;
+    const confirmationLink = `http://localhost:3000/auth/confirm-reset-password?token=${resetPasswordToken}`;
 
     await prisma.resetPasswordToken.create({
       data: {
-        expiredDate: new Date(Date.now() + 1000 * 60 * 5),
+        expiredDate: new Date(Date.now() + 1000 * 60 * 15),
         token: resetPasswordToken,
         userId: existingUser.id,
       },
@@ -51,7 +51,7 @@ export async function requestResetPassword(
     const templateSource = await fs.readFile(
       'src/templates/reset-password-confirmation-template.hbs',
     );
-    const compiledTemplate = handlebars.compile(templateSource);
+    const compiledTemplate = handlebars.compile(templateSource.toString());
     const htmlTemplate = compiledTemplate({
       name: existingUser.name,
       link: confirmationLink,
@@ -59,7 +59,7 @@ export async function requestResetPassword(
     const { data, error } = await resend.emails.send({
       from: 'Fresh Basket <onboarding@frshbasket.shop>',
       to: email,
-      subject: 'Welcome to Fresh Basket',
+      subject: 'Reset your password',
       html: htmlTemplate,
     });
 
