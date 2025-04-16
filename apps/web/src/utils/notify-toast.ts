@@ -1,5 +1,5 @@
-import { toast } from 'react-toastify';
+import { toast, ToastOptions } from 'react-toastify';
 
-export function notify(message: string) {
-  return toast(message);
+export function notify(message: string, options?: ToastOptions) {
+  return toast(message, options);
 }
