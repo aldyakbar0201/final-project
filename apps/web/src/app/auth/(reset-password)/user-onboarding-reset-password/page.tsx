@@ -47,7 +47,7 @@ export default async function OnboardingResetPassword({
       {/*<span>Make sure to choose a strong password!</span>*/}
 
       <Link
-        href="/auth/confirm-reset-password"
+        href={`/auth/confirm-reset-password?token=${searchParams.token}`}
         className="text-blue500 hover:text-blue700 transition duration=300"
       >
         Proceed to Set Your New Password

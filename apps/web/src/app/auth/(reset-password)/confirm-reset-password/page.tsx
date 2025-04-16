@@ -37,7 +37,7 @@ export default function ConfirmResetPassword() {
 
       // Send request to backend to reset password
       const response = await fetch(
-        'http://localhost:8000/api/v1/reset-password',
+        `http://localhost:8000/api/v1/reset-password`,
         {
           method: 'PUT',
           headers: {
@@ -180,8 +180,6 @@ export default function ConfirmResetPassword() {
           </div>
         </div>
 
-        {/* Optional Image Section */}
-        {/* Uncomment if needed */}
         <div className="relative w-1/2 h-full">
           <Image
             src="/fruit-2.jpg"

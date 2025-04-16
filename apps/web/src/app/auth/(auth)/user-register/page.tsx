@@ -32,7 +32,7 @@ export default function Register() {
         return notify('Error!');
       }
       notify('Registration successfull!');
-      router.push('/auth/login');
+      router.push('/auth/user-login');
     } catch (error) {
       console.log(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });

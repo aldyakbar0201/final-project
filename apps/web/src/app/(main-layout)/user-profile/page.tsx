@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarUser from '@/component/sidebar-profile';
-import Link from 'next/link';
 
 export default function Profile() {
   const [name, setName] = useState<string>('');
@@ -119,11 +118,6 @@ export default function Profile() {
               >
                 Save Changes
               </button>
-              <Link href="/user-profile/reset-password">
-                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                  Reset Password
-                </button>
-              </Link>
             </div>
           </form>
         </div>
