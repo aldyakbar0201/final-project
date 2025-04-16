@@ -152,7 +152,10 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const isValidPassword = bcrypt.compareSync(password, existingUser.password);
+    const isValidPassword = bcrypt.compareSync(
+      password,
+      existingUser.password as string,
+    );
 
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });

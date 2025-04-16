@@ -143,12 +143,18 @@ export default function Login() {
               Continue with Google
             </button>
           </form>
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center flex flex-col gap-2 justify-center">
             <Link
-              href="auth/user-register"
+              href="/auth/user-register"
               className="text-blue-500 hover:text-blue-700"
             >
               Don&apos;t have an account? Register
+            </Link>
+            <Link
+              href="/auth/request-reset-password"
+              className="text-gray-500 hover:text-blue-700"
+            >
+              Forget Password
             </Link>
           </div>
         </div>

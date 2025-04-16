@@ -21,7 +21,7 @@ export async function uploadUserImage(
     }
 
     const cloudinaryData = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'blog/images',
+      folder: 'frshbasket/images',
     });
     fs.unlink(req.file.path);
 
