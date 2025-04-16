@@ -48,8 +48,8 @@ enum OrderStatus {
 }
 
 enum PaymentMethod {
-  BANK_TRANSFER
-  PAYMENT_GATEWAY
+  Midtrans
+  Manual
 }
 
 // enum PaymentStatus {
@@ -139,6 +139,7 @@ model Store {
   SalesReport SalesReport[] // Relasi balik ke SalesReport
   StockReport StockReport[] // Relasi balik ke StockReport
   Order       Order[]
+  Voucher     Voucher[]
 }
 
 // Tabel Produk
@@ -158,17 +159,18 @@ model Product {
   Discount     Discount[]
   SalesReport  SalesReport[] // Relasi balik ke SalesReport
   StockReport  StockReport[] // Relasi balik ke StockReport
-  CartItem     CartItem[]
   OrderItem    OrderItem[]
   ProductImage ProductImage[]
+  Voucher      Voucher[]
+  CartItem     CartItem[]
 }
 
 model ProductImage {
   id        Int    @id @default(autoincrement())
-  productId String
+  productId Int
   imageUrl  String
 
-  Product Product @relation(fields: [id], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
 }
 
 // Tabel Kategori Produk
@@ -206,8 +208,9 @@ model StockLog {
 // Tabel Diskon
 model Discount {
   id           Int          @id @default(autoincrement())
-  productId    Int
-  storeId      Int
+  productId    Int?
+  storeId      Int?
+  code         String // Kode diskon
   type         DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
   value        Float // Nilai diskon (persentase atau nominal)
   minPurchase  Float? // Minimal pembelian untuk diskon
@@ -216,16 +219,23 @@ model Discount {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  Product        Product          @relation(fields: [productId], references: [id])
-  Store          Store            @relation(fields: [storeId], references: [id])
+  Product        Product?         @relation(fields: [productId], references: [id])
+  Store          Store?           @relation(fields: [storeId], references: [id])
   DiscountReport DiscountReport[]
 }
 
 model Voucher {
-  id    Int          @id @default(autoincrement())
-  code  String
-  type  DiscountType // Tipe diskon: PERCENTAGE atau FIXED_AMOUNT
-  value Float
+  id        Int         @id @default(autoincrement())
+  code      String      @unique
+  type      VoucherType
+  value     Float
+  productId Int?
+  storeId   Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  Product Product? @relation(fields: [productId], references: [id])
+  Store   Store    @relation(fields: [storeId], references: [id])
 }
 
 model DiscountReport {
@@ -302,8 +312,8 @@ model Order {
   id               String      @id @default(uuid())
   userId           Int
   storeId          Int
+  addressId        Int
   orderNumber      String      @unique
-  addressId        String
   orderStatus      OrderStatus
   paymentMethod    String
   // paymentStatus    PaymentStatus

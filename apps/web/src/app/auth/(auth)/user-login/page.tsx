@@ -35,7 +35,7 @@ export default function Login() {
       notify('Login successful');
       router.push('/');
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setFieldErrors({ general: 'An error occurred. Please try again.' });
     } finally {
       setFormLogin({

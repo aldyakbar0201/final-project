@@ -1,34 +1,79 @@
 'use client';
-import Image from 'next/image';
+
 import Link from 'next/link';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+
+import { CartContext } from '@/context/cart-provider';
+import { CartTotalPriceContext } from '@/context/cart-total-price-provider';
+import { Bill } from '@/component/for-cart/bill';
+import ItemDetails from '@/component/for-cart/item-details';
 
 export default function Cart() {
-  const [order, setOrder] = useState(1);
-  const [price, setPrice] = useState(0);
-  const [erase, setErase] = useState(false);
+  const cart = useContext(CartContext);
+  const cartPrice = useContext(CartTotalPriceContext);
+  const [localCart, setLocalCart] = useState(cart?.cartItems);
 
-  function handlePlus() {
-    setOrder(order + 1);
-    setPrice((order + 1) * 1000);
-  }
+  useEffect(() => {
+    setLocalCart(cart?.cartItems);
+  }, [cart]);
 
-  function handleMinus() {
-    if (order > 1) {
-      setOrder(order - 1);
-      setPrice((order - 1) * 1000);
-    } else {
-      if (confirm('Are you sure to delete this product?')) {
-        setErase(!erase);
-      }
-    }
-  }
+  /* -------------------------------------------------------------------------- */
+  /*                                     GET                                    */
+  /* -------------------------------------------------------------------------- */
+  // useEffect(() => {
+  //   async function getCart() {
+  //     try {
+  //       const response = await fetch('http://localhost:8000/api/v1/carts/11');
+  //       const data = await response.json();
+  //       // console.log(data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-  function handleErase() {
-    if (confirm('Are you sure to delete this product?')) {
-      setErase(!erase);
-    }
-  }
+  //   getCart();
+  // }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   UPDATE                                   */
+  /* -------------------------------------------------------------------------- */
+  // useEffect(() => {
+  //   async function updateCartItem() {
+  //     try {
+  //       const response = await fetch('http://localhost:8000/api/v1/carts/update', {
+  //         method: 'PUT',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({ quantity, productId }),
+  //       });
+  //       const data = await response.json();
+  //       console.log(data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+
+  //   updateCartItem();
+  // }, [order, price]);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   UPLOAD                                   */
+  /* -------------------------------------------------------------------------- */
+  // useEffect(() => {
+  //   async function postOrders() {
+  //     try {
+  //       const response = await axios.post('http://localhost:8000/api/v1/orders',{
+  //         //must be filled
+  //       });
+  //       const data = response.data;
+
+  //       console.log(data);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  // },[])
 
   return (
     <section className="m-5 md:m-10 lg:m-20 min-h-screen">
@@ -37,54 +82,23 @@ export default function Cart() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* PRODUCT CARD */}
         <div className="w-full lg:w-[70%]">
-          {!erase ? (
+          {localCart?.length !== 0 ? (
             <div className="border-2 border-lime-600 p-5 flex flex-col gap-4">
-              {/* Single Product Card */}
-              <div className="flex items-center justify-between">
-                {/* Image - Always on the left */}
-                <div className="relative flex-shrink-0 mr-4 w-28 h-28">
-                  <Image
-                    src={'/apple.jpg'}
-                    fill
-                    alt="dummy product"
-                    className="rounded-md overflow-hidden object-cover"
-                  />
-                </div>
-
-                {/* Product details - Centered and takes available space */}
-                <div className="flex-grow flex flex-col gap-2">
-                  <h2 className="text-lg font-semibold">Tomatos</h2>
-                  <p className="text-sm text-gray-600">x2</p>
-                  <div className="flex items-center mt-3">
-                    <button
-                      onClick={handleMinus}
-                      className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                    >
-                      -
-                    </button>
-                    <h2 className="w-12 text-center text-lg font-semibold">
-                      {order}
-                    </h2>
-                    <button
-                      onClick={handlePlus}
-                      className="h-5 w-5 rounded-full bg-lime-600 text-black flex items-center justify-center text-xl"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Price and delete button - Always on the right */}
-                <div className="flex flex-col items-end">
-                  <span
-                    className="text-xl w-5 h-5 cursor-pointer bg-red-600 p-2 rounded-md flex items-center justify-center text-white mb-7"
-                    onClick={handleErase}
-                  >
-                    x
-                  </span>
-                  <p className="text-lg font-semibold">{`Rp${price}`}</p>
-                </div>
-              </div>
+              {localCart?.map((item) => (
+                <ItemDetails
+                  key={item?.Product?.id}
+                  id={item?.Product?.id} // Use the product ID as the key
+                  image={item?.Product?.ProductImage[0]?.imageUrl}
+                  name={item?.Product?.name}
+                  price={item?.Product?.price}
+                  quantity={item?.quantity}
+                  description={item?.Product?.description}
+                  store={item?.Product?.Store?.name}
+                  setTotalPrice={cartPrice?.setTotalPrice || (() => {})}
+                  totalPrice={cartPrice?.totalPrice || 0}
+                  setLocalCart={setLocalCart}
+                />
+              ))}
             </div>
           ) : (
             // Empty Cart Message Component
@@ -96,7 +110,7 @@ export default function Cart() {
                 Please look for items in our store.
               </p>
               <Link
-                href="/store"
+                href="/"
                 className="text-lime-600 hover:underline mt-4 inline-block"
               >
                 Go to Store
@@ -106,26 +120,7 @@ export default function Cart() {
         </div>
 
         {/* TOTAL CARD */}
-        <div className="w-full lg:w-[30%] sticky top-10 bg-white shadow-md p-4 border-2 border-lime-600">
-          <h2 className="text-2xl font-semibold mb-2">Bill</h2>
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between text-lg">
-              <p>Product Name</p>
-              <p>{`x ${order}`}</p>
-            </div>
-            <p className="text-lg font-semibold">{`Rp${price},00`}</p>
-            <button
-              className={`w-full ${
-                erase ? 'bg-gray-400 cursor-not-allowed' : 'bg-lime-600'
-              } text-black py-2 text-lg rounded-md font-semibold hover:bg-lime-500 transition`}
-              disabled={erase}
-            >
-              <Link href={'/checkout'} className="block w-full">
-                Checkout
-              </Link>
-            </button>
-          </div>
-        </div>
+        <Bill />
       </div>
     </section>
   );

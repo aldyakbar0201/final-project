@@ -10,6 +10,9 @@ import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
 import orderRouter from './routers/order-router.js';
 import cartRouter from './routers/cart-router.js';
+import voucherRouter from './routers/voucher-router.js';
+import discountRouter from './routers/discount-router.js';
+import shippingRouter from './routers/shipping-router.js';
 import adminRoutes from './routers/admin-router.js';
 import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
@@ -37,7 +40,10 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/roles', roleRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/vouchers', voucherRouter);
+app.use('/api/v1/discounts', discountRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/shippings', shippingRouter);
 
 //upload user photo
 app.use('/api/v1/upload-photo', uploadPhotoRouter);
@@ -51,7 +57,7 @@ app.use(errorMiddleware);
 
 //testing cookies token
 app.get('/check-cookies', (req, res) => {
-  console.log('Cookies:', req.cookies);
+  // console.log('Cookies:', req.cookies);
   res.json({ cookies: req.cookies });
 });
 

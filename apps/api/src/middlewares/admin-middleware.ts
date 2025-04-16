@@ -13,7 +13,7 @@ export function VerifyToken(
   next: NextFunction,
 ): void {
   try {
-    console.log('Cookies in request:', req.cookies);
+    // console.log('Cookies in request:', req.cookies);
 
     const token = req.cookies?.token;
     if (!token) {

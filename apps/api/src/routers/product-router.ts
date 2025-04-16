@@ -13,7 +13,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '../controllers/product-controller.js';
-import upload from '../middlewares/uploud-middleware.js';
+import upload from '../middlewares/upload-middleware.js';
 
 const router = express.Router();
 
