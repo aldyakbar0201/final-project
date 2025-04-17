@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
-const { genSalt, hash, compare } = bcrypt;
+const { genSalt, hash } = bcrypt;
 
 // Login untuk admin
 export async function login(req: Request, res: Response, next: NextFunction) {
@@ -35,7 +35,10 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const isValidPassword = await compare(password, existingUser.password);
+    const isValidPassword = bcrypt.compareSync(
+      password,
+      existingUser.password as string,
+    );
 
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });
@@ -45,18 +48,24 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       id: existingUser.id,
       name: existingUser.name,
       email: existingUser.email,
+      picture: existingUser.userPhoto,
       role: existingUser.role,
     };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY as string, {
-      expiresIn: '1h',
+      expiresIn: '1d',
     });
 
     res
       .cookie('accessToken', token, {
         httpOnly: true,
         sameSite: 'lax',
-        secure: false,
-        domain: 'localhost',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? 'frshbasket.shop'
+            : 'localhost',
+        maxAge: 3600000,
       })
       .status(200)
       .json({ ok: true, message: 'Login success' });
