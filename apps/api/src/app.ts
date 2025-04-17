@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 import express, { Application, Request, Response } from 'express';
 import { notFoundMiddleware } from './middlewares/not-found.middleware.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
-import { VerifyToken } from './middlewares/admin-middleware.js';
 import authRouter from './routers/auth-router.js';
 import roleRouter from './routers/role-router.js';
 import orderRouter from './routers/order-router.js';
@@ -18,6 +17,8 @@ import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
 import resetPasswordRouter from './routers/reset-password-router.js';
 import uploadPhotoRouter from './routers/upload-user-photo-router.js';
+import inventoryRouter from './routers/inventory-router.js';
+import reportRouter from './routers/report-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -25,15 +26,21 @@ const PORT = process.env.PORT || 8000;
 app.use(cors({ origin: 'http://localhost:3000', credentials: true })); //origin: frshbasket.shop
 
 app.use(express.json());
-app.use(cookieParser()); // Tambahkan sebelum route
+// app.use(cookieParser()); // Tambahkan sebelum route
 
 app.get('/api/v1/status', (_req: Request, res: Response) => {
   res.status(200).json({ message: 'API is running' });
 });
 
+app.use(cookieParser()); // Tambahkan sebelum route
+
 // Routes admin
-app.use('/api/v1/admin', VerifyToken, adminRoutes);
+app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/product', productRouter);
+app.use('/api/v1/product', productRouter);
+app.use('/api/v1/inventory', inventoryRouter);
+app.use('/api/v1/discount', discountRouter);
+app.use('/api/v1/report', reportRouter);
 
 //user
 app.use('/api/v1/auth', authRouter);
