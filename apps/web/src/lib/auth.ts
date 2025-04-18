@@ -1,18 +1,25 @@
-export function getSession() {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem('session') || 'null');
-  }
-  return null;
-}
+export async function loginAdmin(
+  email: string,
+  password: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/admin/login', {
+      method: 'POST',
+      credentials: 'include', // cookie diterima dari backend
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-export function login(email: string, password: string) {
-  if (email === 'admin@example.com' && password === 'password') {
-    localStorage.setItem('session', JSON.stringify({ role: 'super-admin' }));
-    return true;
-  }
-  return false;
-}
+    if (!res.ok) {
+      const errorData = await res.json();
+      return { success: false, message: errorData.message || 'Login gagal' };
+    }
 
-export function logout() {
-  localStorage.removeItem('session');
+    return { success: true, message: 'Login berhasil' };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, message: 'Terjadi kesalahan saat login' };
+  }
 }

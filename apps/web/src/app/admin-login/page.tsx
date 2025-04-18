@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from '../../lib/auth';
+import { loginAdmin } from '../../lib/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,9 +10,9 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
+    const success = await loginAdmin(email, password);
     if (success) {
-      router.push('/admin');
+      router.push('/admin-dashboard');
     } else {
       alert('Invalid credentials');
     }
