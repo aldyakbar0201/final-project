@@ -18,6 +18,7 @@ import productRouter from '../src/routers/product-router.js';
 import userRouter from './routers/user-router.js';
 import resetPasswordRouter from './routers/reset-password-router.js';
 import uploadPhotoRouter from './routers/upload-user-photo-router.js';
+import addressRouter from './routers/address-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -50,6 +51,9 @@ app.use('/api/v1/upload-photo', uploadPhotoRouter);
 
 //reset password
 app.use('/api/v1/reset-password', resetPasswordRouter);
+
+//address
+app.use('/api/v1/address', addressRouter);
 
 //not found and error
 app.use(notFoundMiddleware);
