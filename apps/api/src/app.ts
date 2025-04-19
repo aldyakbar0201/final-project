@@ -38,7 +38,6 @@ app.use(cookieParser()); // Tambahkan sebelum route
 // Routes admin
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/product', productRouter);
-app.use('/api/v1/product', productRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/discount', discountRouter);
 app.use('/api/v1/report', reportRouter);

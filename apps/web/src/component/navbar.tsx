@@ -1,6 +1,14 @@
 'use client';
 
-import { ShoppingCart, User, ZoomIn, Menu, X } from 'lucide-react';
+import {
+  ShoppingCart,
+  User,
+  ZoomIn,
+  Menu,
+  X,
+  UserCog,
+  Shield,
+} from 'lucide-react'; // ⬅️ add UserCog and ShieldUser
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null); // ⬅️ add userRole state
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -15,10 +24,18 @@ export default function Navbar() {
         const response = await fetch('http://localhost:8000/api/v1/auth/me', {
           credentials: 'include',
         });
-        setIsLoggedIn(response.ok);
+        if (response.ok) {
+          setIsLoggedIn(true);
+          const data = await response.json();
+          setUserRole(data.role); // ⬅️ assume API returns { role: 'CUSTOMER' | 'STORE_ADMIN' | 'SUPER_ADMIN' }
+        } else {
+          setIsLoggedIn(false);
+          setUserRole(null);
+        }
       } catch (error) {
         console.error('Error checking authentication status:', error);
         setIsLoggedIn(false);
+        setUserRole(null);
       }
     };
 
@@ -93,10 +110,22 @@ export default function Navbar() {
           {isLoggedIn ? (
             <motion.div whileHover={{ scale: 1.2 }}>
               <Link
-                href="/user-profile"
+                href={
+                  userRole === 'STORE_ADMIN'
+                    ? '/store-admin'
+                    : userRole === 'SUPER_ADMIN'
+                      ? '/store-management'
+                      : '/user-profile'
+                }
                 className="flex items-center text-gray-600 hover:text-blue-500 transition-colors"
               >
-                <User className="w-6 h-6" />
+                {userRole === 'STORE_ADMIN' ? (
+                  <UserCog className="w-6 h-6" />
+                ) : userRole === 'SUPER_ADMIN' ? (
+                  <Shield className="w-6 h-6" />
+                ) : (
+                  <User className="w-6 h-6" />
+                )}
               </Link>
             </motion.div>
           ) : (
@@ -133,11 +162,21 @@ export default function Navbar() {
           </Link>
           {isLoggedIn ? (
             <Link
-              href="/user-profile"
+              href={
+                userRole === 'STORE_ADMIN'
+                  ? '/store-admin'
+                  : userRole === 'SUPER_ADMIN'
+                    ? '/store-management'
+                    : '/user-profile'
+              }
               className="text-gray-600 hover:text-blue-500"
               onClick={() => setIsMenuOpen(false)}
             >
-              Profile
+              {userRole === 'STORE_ADMIN'
+                ? 'Store Admin'
+                : userRole === 'SUPER_ADMIN'
+                  ? 'Management'
+                  : 'Profile'}
             </Link>
           ) : (
             <Link
