@@ -1,20 +1,71 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { FaStar } from 'react-icons/fa';
 import {
   IoArrowBackOutline,
   IoShareOutline,
   IoHeartOutline,
 } from 'react-icons/io5';
+import Image from 'next/image';
+import { ImageOff } from 'lucide-react'; // If you want fallback when no image
+
+interface Product {
+  id: number;
+  name: string;
+  image: string | null;
+  description: string;
+  price: number;
+  categoryId: number;
+  storeId: number;
+}
 
 export default function ProductDetail() {
   const router = useRouter();
+  const { id } = useParams(); // <-- Get ID from URL
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/v1/product/product/${id}`,
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch product');
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
 
   const handleIncrease = () => setQuantity((prev) => prev + 1);
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  if (loading) {
+    return <main className="p-4 min-h-screen">Loading...</main>;
+  }
+
+  if (error || !product) {
+    return (
+      <main className="p-4 min-h-screen">
+        Error: {error || 'Product not found'}
+      </main>
+    );
+  }
 
   return (
     <main className="p-4 min-h-screen bg-white">
@@ -30,19 +81,27 @@ export default function ProductDetail() {
 
       {/* Product Image */}
       <div className="bg-gray-100 p-4 rounded-xl flex justify-center items-center">
-        <img
-          src="/apple.jpg"
-          alt="Natural Red Apple"
-          className="w-64 h-64 object-cover rounded-lg" // Ukuran gambar diperkecil
-        />
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            width={300}
+            height={300}
+            className="object-cover rounded-lg"
+          />
+        ) : (
+          <div className="flex items-center justify-center w-64 h-64 bg-gray-200 rounded-lg">
+            <ImageOff className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
       </div>
 
       {/* Product Info */}
       <div className="mt-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold">Natural Red Apple</h1>
-            <p className="text-gray-500">1kg, Price</p>
+            <h1 className="text-2xl font-bold">{product.name}</h1>
+            <p className="text-gray-500">Price per item</p>
           </div>
           <button>
             <IoHeartOutline size={24} />
@@ -66,20 +125,19 @@ export default function ProductDetail() {
               +
             </button>
           </div>
-          <p className="text-2xl font-bold">$4.99</p>
+          <p className="text-2xl font-bold">
+            Rp {(product.price * quantity).toLocaleString('id-ID')}
+          </p>
         </div>
       </div>
 
       {/* Product Details */}
       <div className="mt-6 border-t pt-4">
         <h2 className="text-lg font-bold">Product Detail</h2>
-        <p className="text-gray-500 text-sm mt-2">
-          Apples are nutritious. Apples may be good for weight loss. Apples may
-          be good for your heart. As part of a healthful and varied diet.
-        </p>
+        <p className="text-gray-500 text-sm mt-2">{product.description}</p>
       </div>
 
-      {/* Nutrition */}
+      {/* Nutritions */}
       <div className="mt-4 border-t pt-4 flex justify-between items-center">
         <h2 className="text-lg font-bold">Nutritions</h2>
         <button className="bg-gray-200 px-3 py-1 rounded-full text-sm">
