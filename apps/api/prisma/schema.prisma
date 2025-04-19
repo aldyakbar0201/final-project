@@ -79,6 +79,7 @@ model User {
   ResetPasswordToken ResetPasswordToken[]
   Address            Address[]
   DiscountReport     DiscountReport[]
+  Store              Store[]
 }
 
 // Tabel ConfirmToken
@@ -140,6 +141,7 @@ model Store {
   StockReport StockReport[] // Relasi balik ke StockReport
   Order       Order[]
   Voucher     Voucher[]
+  User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Tabel Produk
