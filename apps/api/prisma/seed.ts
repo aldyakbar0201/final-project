@@ -196,7 +196,7 @@ async function createProducts(
       price: 15000, // IDR price
       categoryId: categories[0].id, // Fruits & Vegetables
       storeId: stores[0].id, // Fresh Market
-      weight: 1,
+      weight: 1000,
       ProductImage: {
         create: {
           imageUrl:

@@ -1,18 +1,22 @@
 'use client';
 
-import { ShoppingCart, User, ZoomIn, Menu, X } from 'lucide-react';
+import {
+  ShoppingCart,
+  User,
+  ZoomIn,
+  Menu,
+  X,
+  UserCog,
+  Shield,
+} from 'lucide-react'; // ⬅️ add UserCog and ShieldUser
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-// import { useSession } from 'next-auth/react';
-import { CartContext } from '@/context/cart-provider';
-import { useContext } from 'react';
-
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cart = useContext(CartContext);
+  const [userRole, setUserRole] = useState<string | null>(null); // ⬅️ add userRole state
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -20,10 +24,18 @@ export default function Navbar() {
         const response = await fetch('http://localhost:8000/api/v1/auth/me', {
           credentials: 'include',
         });
-        setIsLoggedIn(response.ok);
+        if (response.ok) {
+          setIsLoggedIn(true);
+          const data = await response.json();
+          setUserRole(data.role); // ⬅️ assume API returns { role: 'CUSTOMER' | 'STORE_ADMIN' | 'SUPER_ADMIN' }
+        } else {
+          setIsLoggedIn(false);
+          setUserRole(null);
+        }
       } catch (error) {
         console.error('Error checking authentication status:', error);
         setIsLoggedIn(false);
+        setUserRole(null);
       }
     };
 
@@ -98,10 +110,22 @@ export default function Navbar() {
           {isLoggedIn ? (
             <motion.div whileHover={{ scale: 1.2 }}>
               <Link
-                href="/user-profile"
+                href={
+                  userRole === 'STORE_ADMIN'
+                    ? '/store-admin'
+                    : userRole === 'SUPER_ADMIN'
+                      ? '/store-management'
+                      : '/user-profile'
+                }
                 className="flex items-center text-gray-600 hover:text-blue-500 transition-colors"
               >
-                <User className="w-6 h-6" />
+                {userRole === 'STORE_ADMIN' ? (
+                  <UserCog className="w-6 h-6" />
+                ) : userRole === 'SUPER_ADMIN' ? (
+                  <Shield className="w-6 h-6" />
+                ) : (
+                  <User className="w-6 h-6" />
+                )}
               </Link>
             </motion.div>
           ) : (
@@ -129,22 +153,30 @@ export default function Navbar() {
           >
             Explore
           </Link>
-          <Link href="/cart" className="flex items-center relative">
-            <ShoppingCart className="w-6 h-6 mr-1" />
-            <span className="sr-only">Cart</span>
-            {cart?.cartQuantity ? (
-              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cart.cartQuantity}
-              </div>
-            ) : null}
+          <Link
+            href="/cart"
+            className="text-gray-600 hover:text-blue-500"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Cart
           </Link>
           {isLoggedIn ? (
             <Link
-              href="/user-profile"
+              href={
+                userRole === 'STORE_ADMIN'
+                  ? '/store-admin'
+                  : userRole === 'SUPER_ADMIN'
+                    ? '/store-management'
+                    : '/user-profile'
+              }
               className="text-gray-600 hover:text-blue-500"
               onClick={() => setIsMenuOpen(false)}
             >
-              Profile
+              {userRole === 'STORE_ADMIN'
+                ? 'Store Admin'
+                : userRole === 'SUPER_ADMIN'
+                  ? 'Management'
+                  : 'Profile'}
             </Link>
           ) : (
             <Link

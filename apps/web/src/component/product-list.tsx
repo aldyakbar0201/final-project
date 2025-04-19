@@ -5,10 +5,10 @@ import { useState, useEffect, useContext } from 'react';
 import { CartContext } from '@/context/cart-provider';
 import { FaSearch, FaShoppingCart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { ImageOff } from 'lucide-react'; // Import ImageOff icon from lucide-react
-import { toast } from 'react-toastify';
+import { ImageOff } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import the toastify CSS
 
-// Define the Product interface
 interface Product {
   id: number;
   name: string;
@@ -126,20 +126,18 @@ export default function ProductList() {
     );
   }
 
-  // Filter products based on search query
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Limit the number of products displayed to 6
   const displayedProducts = showAll
     ? filteredProducts
     : filteredProducts.slice(0, 6);
 
   return (
     <section className="py-12">
+      <ToastContainer position="bottom-right" /> {/* Add ToastContainer here */}
       <div className="container mx-auto">
-        {/* Search Bar */}
         <motion.div
           className="mb-6 relative"
           initial={{ opacity: 0, y: -20 }}
