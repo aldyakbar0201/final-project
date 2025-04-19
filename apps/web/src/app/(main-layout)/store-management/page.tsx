@@ -1,7 +1,6 @@
-// components/store-management.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FaPlus,
   FaEdit,
@@ -16,8 +15,8 @@ import { notify } from '@/utils/notify-toast';
 interface Store {
   id: number;
   name: string;
-  location: string;
-  admin: string;
+  address: string;
+  userId: number;
 }
 
 interface Admin {
@@ -28,84 +27,227 @@ interface Admin {
 
 export default function StoreManagement() {
   const [loading, setLoading] = useState(false);
-  const [stores, setStores] = useState<Store[]>([
-    { id: 1, name: 'Toko A', location: 'Jl. A', admin: 'Admin A' },
-    { id: 2, name: 'Toko B', location: 'Jl. B', admin: 'Admin B' },
-  ]);
-
-  const [admins, setAdmins] = useState<Admin[]>([
-    { id: 1, name: 'Admin A', email: 'adminA@example.com' },
-    { id: 2, name: 'Admin B', email: 'adminB@example.com' },
-  ]);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
 
   const [newStoreName, setNewStoreName] = useState('');
-  const [newStoreLocation, setNewStoreLocation] = useState('');
-  const [newStoreAdmin, setNewStoreAdmin] = useState('');
+  const [newStoreAddress, setNewStoreAddress] = useState('');
+  const [newStoreLatitude, setNewStoreLatitude] = useState('');
+  const [newStoreLongitude, setNewStoreLongitude] = useState('');
+  const [newStoreMaxDistance, setNewStoreMaxDistance] = useState('');
+  const [newStoreAdminId, setNewStoreAdminId] = useState('');
 
   const [editingStoreId, setEditingStoreId] = useState<number | null>(null);
   const [editingStoreName, setEditingStoreName] = useState('');
   const [editingStoreLocation, setEditingStoreLocation] = useState('');
-  const [editingStoreAdmin, setEditingStoreAdmin] = useState('');
 
-  const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [assignStoreId, setAssignStoreId] = useState('');
+  const [assignUserId, setAssignUserId] = useState('');
 
-  const addStore = () => {
-    if (newStoreName && newStoreLocation && newStoreAdmin) {
-      const newStore: Store = {
-        id: stores.length + 1,
-        name: newStoreName,
-        location: newStoreLocation,
-        admin: newStoreAdmin,
-      };
-      setStores([...stores, newStore]);
-      setNewStoreName('');
-      setNewStoreLocation('');
-      setNewStoreAdmin('');
-    }
-  };
+  useEffect(() => {
+    fetchStores();
+    fetchAdmins();
+  }, []);
 
-  const deleteStore = (id: number) => {
-    setStores(stores.filter((store) => store.id !== id));
-  };
-
-  const startEditStore = (store: Store) => {
-    setEditingStoreId(store.id);
-    setEditingStoreName(store.name);
-    setEditingStoreLocation(store.location);
-    setEditingStoreAdmin(store.admin);
-  };
-
-  const updateStore = () => {
-    if (editingStoreId !== null) {
-      const updatedStores = stores.map((store) =>
-        store.id === editingStoreId
-          ? {
-              id: store.id,
-              name: editingStoreName,
-              location: editingStoreLocation,
-              admin: editingStoreAdmin,
-            }
-          : store,
+  const fetchStores = async () => {
+    try {
+      const res = await fetch(
+        'http://localhost:8000/api/v1/super-admin/stores',
+        {
+          credentials: 'include',
+        },
       );
-      setStores(updatedStores);
-      setEditingStoreId(null);
-      setEditingStoreName('');
-      setEditingStoreLocation('');
-      setEditingStoreAdmin('');
+      const data = await res.json();
+      setStores(data);
+    } catch (error) {
+      console.error('Error fetching stores:', error);
     }
   };
 
-  const addAdmin = () => {
-    if (newAdminName && newAdminEmail) {
-      const newAdmin: Admin = {
-        id: admins.length + 1,
-        name: newAdminName,
-        email: newAdminEmail,
-      };
-      setAdmins([...admins, newAdmin]);
-      setNewAdminName('');
-      setNewAdminEmail('');
+  const fetchAdmins = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/v1/admin/users', {
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch admins');
+      }
+
+      const users = await res.json();
+      if (!Array.isArray(users)) {
+        throw new Error('Invalid users format');
+      }
+
+      const storeAdmins = users.filter((user) => user.role === 'STORE_ADMIN');
+      setAdmins(storeAdmins);
+    } catch (error) {
+      console.error('Error fetching admins:', error);
+      setAdmins([]);
+    }
+  };
+
+  const createStore = async () => {
+    if (
+      !newStoreName ||
+      !newStoreAddress ||
+      !newStoreLatitude ||
+      !newStoreLongitude ||
+      !newStoreMaxDistance ||
+      !newStoreAdminId
+    )
+      return;
+
+    try {
+      const res = await fetch(
+        'http://localhost:8000/api/v1/super-admin/stores',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newStoreName,
+            address: newStoreAddress,
+            latitude: parseFloat(newStoreLatitude),
+            longitude: parseFloat(newStoreLongitude),
+            maxDistance: parseFloat(newStoreMaxDistance),
+            userId: parseInt(newStoreAdminId),
+          }),
+        },
+      );
+
+      if (res.ok) {
+        notify('Store created successfully!', {
+          type: 'success',
+          position: 'top-center',
+        });
+        fetchStores();
+        setNewStoreName('');
+        setNewStoreAddress('');
+        setNewStoreLatitude('');
+        setNewStoreLongitude('');
+        setNewStoreMaxDistance('');
+        setNewStoreAdminId('');
+      } else {
+        const errorData = await res.json();
+        notify(errorData.message || 'Failed to create store', {
+          type: 'error',
+          position: 'top-center',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notify('Error creating store', { type: 'error', position: 'top-center' });
+    }
+  };
+
+  const updateStore = async () => {
+    if (editingStoreId === null) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/v1/super-admin/stores/${editingStoreId}`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: editingStoreName,
+            location: editingStoreLocation,
+          }),
+        },
+      );
+
+      if (res.ok) {
+        notify('Store updated successfully!', {
+          type: 'success',
+          position: 'top-center',
+        });
+        fetchStores();
+        setEditingStoreId(null);
+        setEditingStoreName('');
+        setEditingStoreLocation('');
+      } else {
+        const errorData = await res.json();
+        notify(errorData.message || 'Failed to update store', {
+          type: 'error',
+          position: 'top-center',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notify('Error updating store', { type: 'error', position: 'top-center' });
+    }
+  };
+
+  const deleteStore = async (id: number) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/v1/super-admin/stores/${id}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        },
+      );
+
+      if (res.ok) {
+        notify('Store deleted successfully!', {
+          type: 'success',
+          position: 'top-center',
+        });
+        fetchStores();
+      } else {
+        const errorData = await res.json();
+        notify(errorData.message || 'Failed to delete store', {
+          type: 'error',
+          position: 'top-center',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notify('Error deleting store', { type: 'error', position: 'top-center' });
+    }
+  };
+
+  const assignAdmin = async () => {
+    if (!assignStoreId || !assignUserId) return;
+
+    try {
+      const res = await fetch(
+        'http://localhost:8000/api/v1/super-admin/assign-store-admin',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storeId: parseInt(assignStoreId),
+            userId: parseInt(assignUserId),
+          }),
+        },
+      );
+
+      if (res.ok) {
+        notify('Admin assigned successfully!', {
+          type: 'success',
+          position: 'top-center',
+        });
+        await fetchAdmins(); // Re-fetch admins
+        await fetchStores(); // 🆕 Re-fetch stores immediately!
+        setAssignStoreId('');
+        setAssignUserId('');
+      } else {
+        const errorData = await res.json();
+        notify(errorData.message || 'Failed to assign admin', {
+          type: 'error',
+          position: 'top-center',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      notify('Error assigning admin', {
+        type: 'error',
+        position: 'top-center',
+      });
     }
   };
 
@@ -113,42 +255,27 @@ export default function StoreManagement() {
     try {
       const response = await fetch('http://localhost:8000/api/v1/auth/logout', {
         method: 'POST',
-        credentials: 'include', // important for cookies/session
+        credentials: 'include',
       });
       if (response.ok) {
-        window.location.href = '/'; // or to login page
+        window.location.href = '/';
       } else {
-        notify('Logout failed', {
-          type: 'error',
-          position: 'top-center',
-          autoClose: 1500,
-        });
+        notify('Logout failed', { type: 'error', position: 'top-center' });
       }
     } catch (error) {
-      notify('Logout error', {
-        type: 'error',
-        position: 'top-center',
-        autoClose: 1500,
-      });
-      console.error('Logout error:', error);
+      console.error(error);
+      notify('Logout error', { type: 'error', position: 'top-center' });
     }
   };
 
   const handleLogout = () => {
     setLoading(true);
-    notify('Logging out...', {
-      type: 'info',
-      position: 'top-center',
-      autoClose: 1500,
-    });
-
+    notify('Logging out...', { type: 'info', position: 'top-center' });
     setTimeout(() => {
       notify('Logged out successfully!', {
         type: 'success',
         position: 'top-center',
-        autoClose: 1500,
       });
-
       setTimeout(() => {
         onLogout();
         setLoading(false);
@@ -157,7 +284,7 @@ export default function StoreManagement() {
   };
 
   return (
-    <div className="min-h-screen mt-8 ">
+    <div className="min-h-screen mt-8">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <motion.h1
@@ -174,13 +301,13 @@ export default function StoreManagement() {
             whileTap={{ scale: 0.95 }}
             onClick={handleLogout}
             disabled={loading}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? 'Logging out...' : 'Logout'}
           </motion.button>
         </div>
 
-        {/* Store Management Section */}
+        {/* Manage Stores */}
         <motion.div
           className="bg-white p-6 rounded-lg shadow-md mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -188,43 +315,67 @@ export default function StoreManagement() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl font-bold mb-4">Manage Stores</h2>
-          <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={newStoreName}
-                onChange={(e) => setNewStoreName(e.target.value)}
-                placeholder="Store Name"
-                className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                value={newStoreLocation}
-                onChange={(e) => setNewStoreLocation(e.target.value)}
-                placeholder="Location"
-                className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <select
-                value={newStoreAdmin}
-                onChange={(e) => setNewStoreAdmin(e.target.value)}
-                className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Admin</option>
-                {admins.map((admin) => (
-                  <option key={admin.id} value={admin.name}>
-                    {admin.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={addStore}
-                className="bg-blue-500 text-white p-2 rounded flex items-center"
-              >
-                <FaPlus className="mr-2" />
-                Add Store
-              </button>
-            </div>
+
+          {/* Create Store Form */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Store Name"
+              value={newStoreName}
+              onChange={(e) => setNewStoreName(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              value={newStoreAddress}
+              onChange={(e) => setNewStoreAddress(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <input
+              type="text"
+              placeholder="Latitude"
+              value={newStoreLatitude}
+              onChange={(e) => setNewStoreLatitude(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <input
+              type="text"
+              placeholder="Longitude"
+              value={newStoreLongitude}
+              onChange={(e) => setNewStoreLongitude(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <input
+              type="text"
+              placeholder="Max Distance (KM)"
+              value={newStoreMaxDistance}
+              onChange={(e) => setNewStoreMaxDistance(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <select
+              value={newStoreAdminId}
+              onChange={(e) => setNewStoreAdminId(e.target.value)}
+              className="border p-2 rounded w-full"
+            >
+              <option value="">Select Admin</option>
+              {admins.map((admin) => (
+                <option key={admin.id} value={admin.id}>
+                  {admin.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={createStore}
+              className="bg-blue-500 text-white p-2 rounded flex items-center justify-center cursor-pointer"
+            >
+              <FaPlus className="mr-2" /> Add Store
+            </button>
           </div>
+
+          {/* ... Store Table and Other Code Stays SAME ... */}
+
+          {/* Store List */}
           <table className="w-full border-collapse">
             <thead>
               <tr>
@@ -245,47 +396,36 @@ export default function StoreManagement() {
                         type="text"
                         value={editingStoreName}
                         onChange={(e) => setEditingStoreName(e.target.value)}
-                        className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="border p-2 rounded w-full"
                       />
                     </td>
                     <td className="border p-2">
                       <input
                         type="text"
-                        value={editingStoreLocation}
+                        value={
+                          editingStoreId === store.id
+                            ? editingStoreLocation
+                            : (store.address ?? '')
+                        }
                         onChange={(e) =>
                           setEditingStoreLocation(e.target.value)
                         }
-                        className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="border p-2 rounded w-full"
                       />
                     </td>
-                    <td className="border p-2">
-                      <select
-                        value={editingStoreAdmin}
-                        onChange={(e) => setEditingStoreAdmin(e.target.value)}
-                        className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        <option value="">Select Admin</option>
-                        {admins.map((admin) => (
-                          <option key={admin.id} value={admin.name}>
-                            {admin.name}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="border p-2">
+                    <td className="border p-2">{store.userId}</td>
+                    <td className="border p-2 flex space-x-2">
                       <button
                         onClick={updateStore}
-                        className="bg-green-500 text-white p-2 rounded mr-2 flex items-center"
+                        className="bg-green-500 text-white p-2 rounded flex items-center"
                       >
-                        <FaSave className="mr-2" />
-                        Save
+                        <FaSave className="mr-2" /> Save
                       </button>
                       <button
                         onClick={() => setEditingStoreId(null)}
                         className="bg-red-500 text-white p-2 rounded flex items-center"
                       >
-                        <FaTimes className="mr-2" />
-                        Cancel
+                        <FaTimes className="mr-2" /> Cancel
                       </button>
                     </td>
                   </tr>
@@ -293,22 +433,24 @@ export default function StoreManagement() {
                   <tr key={store.id}>
                     <td className="border p-2">{store.id}</td>
                     <td className="border p-2">{store.name}</td>
-                    <td className="border p-2">{store.location}</td>
-                    <td className="border p-2">{store.admin}</td>
-                    <td className="border p-2">
+                    <td className="border p-2">{store.address}</td>
+                    <td className="border p-2">{store.userId}</td>
+                    <td className="border p-2 flex space-x-2">
                       <button
-                        onClick={() => startEditStore(store)}
-                        className="bg-blue-500 text-white p-2 rounded mr-2 flex items-center"
+                        onClick={() => {
+                          setEditingStoreId(store.id);
+                          setEditingStoreName(store.name);
+                          setEditingStoreLocation(store.address);
+                        }}
+                        className="bg-blue-500 text-white p-2 rounded flex items-center cursor-pointer"
                       >
-                        <FaEdit className="mr-2" />
-                        Edit
+                        <FaEdit className="mr-2" /> Edit
                       </button>
                       <button
                         onClick={() => deleteStore(store.id)}
-                        className="bg-red-500 text-white p-2 rounded flex items-center"
+                        className="bg-red-500 text-white p-2 rounded flex items-center cursor-pointer"
                       >
-                        <FaTrash className="mr-2" />
-                        Delete
+                        <FaTrash className="mr-2" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -326,31 +468,42 @@ export default function StoreManagement() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl font-bold mb-4">Assign Store Admin</h2>
-          <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={newAdminName}
-                onChange={(e) => setNewAdminName(e.target.value)}
-                placeholder="Admin Name"
-                className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="email"
-                value={newAdminEmail}
-                onChange={(e) => setNewAdminEmail(e.target.value)}
-                placeholder="Admin Email"
-                className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={addAdmin}
-                className="bg-blue-500 text-white p-2 rounded flex items-center"
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex flex-row gap-4">
+              <select
+                value={assignStoreId}
+                onChange={(e) => setAssignStoreId(e.target.value)}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <FaUserPlus className="mr-2" />
-                Add Admin
-              </button>
+                <option value="">Select Store</option>
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={assignUserId}
+                onChange={(e) => setAssignUserId(e.target.value)}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Admin</option>
+                {admins.map((admin) => (
+                  <option key={admin.id} value={admin.id}>
+                    {admin.name}
+                  </option>
+                ))}
+              </select>
             </div>
+            <button
+              onClick={assignAdmin}
+              className="bg-blue-500 text-white p-2 rounded flex items-center cursor-pointer"
+            >
+              <FaUserPlus className="mr-2" /> Assign Admin
+            </button>
           </div>
+
+          {/* Admin List */}
           <table className="w-full border-collapse">
             <thead>
               <tr>
