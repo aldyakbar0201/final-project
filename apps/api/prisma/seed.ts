@@ -194,6 +194,7 @@ async function createProducts(
       description:
         'Crisp and juicy red apples, perfect for snacking or baking.',
       price: 15000, // IDR price
+      weight: 1.2, // in kilograms
       categoryId: categories[0].id, // Fruits & Vegetables
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
@@ -207,6 +208,7 @@ async function createProducts(
       name: 'Organic Milk',
       description: 'Fresh organic whole milk from grass-fed cows.',
       price: 25000, // IDR price
+      weight: 1.0, // in liters
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
@@ -220,6 +222,7 @@ async function createProducts(
       name: 'Whole Grain Bread',
       description: 'Freshly baked whole grain bread with seeds.',
       price: 20000, // IDR price
+      weight: 0.5, // in kilograms
       categoryId: categories[3].id, // Bakery
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
@@ -233,6 +236,7 @@ async function createProducts(
       name: 'Free-Range Eggs',
       description: 'Farm fresh free-range eggs, dozen pack.',
       price: 30000, // IDR price
+      weight: 0.7, // in kilograms
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
@@ -246,6 +250,7 @@ async function createProducts(
       name: 'Chicken Breast',
       description: 'Boneless, skinless chicken breast, 1 lb pack.',
       price: 45000, // IDR price
+      weight: 1.0, // in kilograms
       categoryId: categories[2].id, // Meat & Seafood
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
@@ -259,6 +264,7 @@ async function createProducts(
       name: 'Sparkling Water',
       description: 'Refreshing sparkling water, 12-pack.',
       price: 35000, // IDR price
+      weight: 6.0, // in liters
       categoryId: categories[4].id, // Beverages
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
@@ -272,6 +278,7 @@ async function createProducts(
       name: 'Potato Chips',
       description: 'Crispy potato chips, lightly salted.',
       price: 12000, // IDR price
+      weight: 0.2, // in kilograms
       categoryId: categories[5].id, // Snacks
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
@@ -285,6 +292,7 @@ async function createProducts(
       name: 'Canned Tomatoes',
       description: 'Organic diced tomatoes, 14.5 oz can.',
       price: 10000, // IDR price
+      weight: 0.4, // in kilograms
       categoryId: categories[6].id, // Canned Goods
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
@@ -298,6 +306,7 @@ async function createProducts(
       name: 'Frozen Pizza',
       description: 'Pepperoni pizza, ready to bake.',
       price: 50000, // IDR price
+      weight: 0.8, // in kilograms
       categoryId: categories[7].id, // Frozen Foods
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
@@ -311,6 +320,7 @@ async function createProducts(
       name: 'Laundry Detergent',
       description: 'Concentrated laundry detergent, 50 loads.',
       price: 60000, // IDR price
+      weight: 2.5, // in kilograms
       categoryId: categories[8].id, // Household
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
@@ -503,7 +513,7 @@ async function createOrders(
         orderNumber: 'ORD-' + Date.now().toString().substring(7),
         addressId: userAddress.id,
         orderStatus: OrderStatus.COMPLETED,
-        paymentMethod: 'BANK_TRANSFER',
+        paymentMethod: 'Manual',
         paymentProof: 'https://example.com/proof.jpg',
         paymentProofTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
         paymentDueDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
@@ -562,7 +572,7 @@ async function createOrders(
           orderNumber: 'ORD-' + (Date.now() + 1).toString().substring(7),
           addressId: userAddress.id,
           orderStatus: OrderStatus.PENDING_PAYMENT,
-          paymentMethod: 'PAYMENT_GATEWAY',
+          paymentMethod: 'Midtrans',
           paymentDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
           shippingMethod: 'Express Delivery',
           shippingCost: 25000, // IDR price
