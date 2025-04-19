@@ -236,3 +236,29 @@ export async function getCurrentUser(
     next(error);
   }
 }
+
+export async function editUserData(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) {
+      res.status(400).json({ message: 'Missing fields' });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { email: req.user?.email },
+      data: { name, email },
+    });
+
+    res.status(200).json({
+      message: 'User updated successfully',
+      user: updatedUser,
+    }); // ⬅️ NO RETURN
+  } catch (error) {
+    next(error);
+  }
+}

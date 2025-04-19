@@ -1,11 +1,10 @@
-// components/location-prompt.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
-const LocationPrompt = () => {
+export default function LocationPrompt() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
 
@@ -46,38 +45,42 @@ const LocationPrompt = () => {
   }, []);
 
   return (
-    <section className="container mx-auto px-4 py-3">
+    <motion.section
+      className="container mx-auto flex flex-col items-start text-left"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
       <motion.h2
-        className="text-2xl font-bold mb-4 flex items-center"
+        className="text-xl md:text-2xl font-bold text-gray-800 mb-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         Your Location
       </motion.h2>
+
       {locationError ? (
         <motion.p
-          className="text-red-500 flex items-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          className="text-red-500 flex items-center text-base md:text-lg"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
           <FaExclamationTriangle className="mr-2 text-red-500" />
           {locationError}
         </motion.p>
       ) : (
         <motion.p
-          className="text-gray-700 flex items-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          className="text-gray-700 flex items-center text-base md:text-lg"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
           <FaMapMarkerAlt className="mr-2 text-green-500" />
           {locationAddress || 'Fetching location...'}
         </motion.p>
       )}
-    </section>
+    </motion.section>
   );
-};
-
-export default LocationPrompt;
+}

@@ -18,11 +18,11 @@ interface Product {
 }
 
 export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]); // State to store the fetched products
-  const [loading, setLoading] = useState(true); // State to manage loading state
-  const [error, setError] = useState<Error | null>(null); // State to manage any errors
-  const [searchQuery, setSearchQuery] = useState(''); // State to manage search query
-  const [showAll, setShowAll] = useState(false); // State to manage show all products
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,29 +34,40 @@ export default function ProductList() {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        setProducts(data); // Set the fetched products to the state
+        setProducts(data);
       } catch (error) {
-        setError(error as Error); // Set any errors to the state
+        setError(error as Error);
       } finally {
-        setLoading(false); // Set loading to false after the fetch operation
+        setLoading(false);
       }
     };
 
-    fetchProducts(); // Call the fetchProducts function when the component mounts
-  }, []); // Empty dependency array to run the effect only once
+    fetchProducts();
+  }, []);
 
   if (loading) {
     return (
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <motion.p
-            className="text-gray-500"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Loading products...
-          </motion.p>
+      <section className="py-24">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <motion.div
+                key={index}
+                className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="bg-gray-300 h-48 w-full" />
+                <div className="p-5 space-y-4">
+                  <div className="h-4 bg-gray-300 rounded w-3/4" />
+                  <div className="h-3 bg-gray-300 rounded w-5/6" />
+                  <div className="h-4 bg-gray-300 rounded w-1/2" />
+                  <div className="h-10 bg-blue-300 rounded w-full mt-4" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -91,7 +102,7 @@ export default function ProductList() {
 
   return (
     <section className="py-12">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         {/* Search Bar */}
         <motion.div
           className="mb-6 relative"
@@ -106,7 +117,7 @@ export default function ProductList() {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setShowAll(false); // Hide "Show All" when searching
+              setShowAll(false);
             }}
             className="w-full p-3 pl-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -124,7 +135,7 @@ export default function ProductList() {
           {filteredProducts.length > 6 && !showAll && (
             <a
               href="/explore"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
               Show All
             </a>
@@ -132,7 +143,7 @@ export default function ProductList() {
         </div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -141,8 +152,8 @@ export default function ProductList() {
             displayedProducts.map((product) => (
               <motion.div
                 key={product.id}
-                className="bg-white p-6 rounded-lg shadow-md"
-                whileHover={{ scale: 1.05 }}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative w-full h-48">
@@ -151,7 +162,7 @@ export default function ProductList() {
                       src={product.image}
                       alt={product.name}
                       fill
-                      className="w-full h-48 object-cover rounded-t-lg"
+                      className="object-cover rounded-t-lg"
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-t-lg">
@@ -164,7 +175,7 @@ export default function ProductList() {
                 <p className="text-green-600 font-bold mt-2">
                   Rp {product.price.toLocaleString('id-ID')}
                 </p>
-                <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
+                <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center w-full">
                   <FaShoppingCart className="mr-2" />
                   Add to Cart
                 </button>
