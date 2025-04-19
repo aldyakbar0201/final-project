@@ -1,10 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { CartContext } from '@/context/cart-provider';
 import { FaSearch, FaShoppingCart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { ImageOff } from 'lucide-react'; // Import ImageOff icon from lucide-react
+import { ToastContainer, toast } from 'react-toastify';
 
 // Define the Product interface
 interface Product {
@@ -15,6 +17,9 @@ interface Product {
   price: number;
   categoryId: number;
   storeId: number;
+  ProductImage: {
+    imageUrl: string;
+  }[];
 }
 
 export default function ProductList() {
@@ -23,6 +28,37 @@ export default function ProductList() {
   const [error, setError] = useState<Error | null>(null); // State to manage any errors
   const [searchQuery, setSearchQuery] = useState(''); // State to manage search query
   const [showAll, setShowAll] = useState(false); // State to manage show all products
+  const cart = useContext(CartContext);
+
+  const addProductToCart = async (productId: number) => {
+    try {
+      const response = await fetch(
+        'http://localhost:8000/api/v1/product/cart',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: 1,
+          }),
+          credentials: 'include',
+        },
+      );
+      await response.json();
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      } else {
+        cart?.setCartQuantity((prev) => (prev ? prev + 1 : 1));
+        toast.success('Product added to cart successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to add product to cart');
+      console.error('Error adding product to cart:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -91,6 +127,8 @@ export default function ProductList() {
 
   return (
     <section className="py-12">
+      <ToastContainer />
+
       <div className="container mx-auto">
         {/* Search Bar */}
         <motion.div
@@ -146,9 +184,9 @@ export default function ProductList() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative w-full h-48">
-                  {product.image ? (
+                  {product.ProductImage[0].imageUrl ? (
                     <Image
-                      src={product.image}
+                      src={product.ProductImage[0].imageUrl}
                       alt={product.name}
                       fill
                       className="w-full h-48 object-cover rounded-t-lg"
@@ -164,7 +202,10 @@ export default function ProductList() {
                 <p className="text-green-600 font-bold mt-2">
                   Rp {product.price.toLocaleString('id-ID')}
                 </p>
-                <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
+                <button
+                  onClick={() => addProductToCart(product.id)}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+                >
                   <FaShoppingCart className="mr-2" />
                   Add to Cart
                 </button>

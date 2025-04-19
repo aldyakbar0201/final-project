@@ -5,6 +5,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Ensures Leaflet styles are loaded
 import { useForm } from 'react-hook-form';
 
+// import { rajaOngkir } from '@/utils/raja-ongkir';
+
 // 1. disini yang masih kurang proses midtrans sama manualnya
 // 2. belum juga implementasi mekanisme untuk voucher dan discount (applyVoucher & applyDiscount)
 // 3. belum ada geocodingnya untuk RajaOnkir
@@ -164,11 +166,6 @@ export default function Checkout() {
 
           // Update marker position to user's location
           marker.setLatLng([latitude, longitude]);
-
-          // Log initial marker position
-          // console.log(
-          // `Initial marker position set to user location: ${latitude}, ${longitude}`,
-          // );
         },
         (error) => {
           console.error('Error getting user location:', error.message);
@@ -177,7 +174,6 @@ export default function Checkout() {
         {
           enableHighAccuracy: true, // Request high accuracy results
           timeout: 5000, // Wait up to 5 seconds for a position
-          maximumAge: 0, // Don't use cached position
         },
       );
     } else {
@@ -203,13 +199,14 @@ export default function Checkout() {
     async function getRajaOngkir() {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/v1/shippings/options?origin=55284&destination=11540&weight=5`,
+          `http://localhost:8000/api/v1/shippings/options?origin=55284&weight=5`,
         );
 
         const data = await response.json();
-        // console.log('response', data);
         setShippingOptions(data.data.data);
-        // console.log(data);
+        // const data = await rajaOngkir('1000', '55284');
+        // setShippingOptions(data);
+        // console.log(data)
       } catch (error) {
         console.error(error);
       }

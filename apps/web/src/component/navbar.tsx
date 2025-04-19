@@ -2,13 +2,14 @@
 import { ShoppingCart, User, ZoomIn } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react';
+import { CartContext } from '@/context/cart-provider';
+import { useContext } from 'react';
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
-  const { data } = useSession();
-  console.log(data);
-  // console.log(isLoggedIn);
+  // const { data } = useSession();
+  const cart = useContext(CartContext);
 
   useEffect(() => {
     // Fetch user authentication status
@@ -42,9 +43,14 @@ export default function Navbar() {
             <ZoomIn className="w-6 h-6 mr-1" />
             <span className="sr-only">Explore</span>
           </Link>
-          <Link href="/cart" className="flex items-center">
+          <Link href="/cart" className="flex items-center relative">
             <ShoppingCart className="w-6 h-6 mr-1" />
             <span className="sr-only">Cart</span>
+            {cart?.cartQuantity ? (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cart.cartQuantity}
+              </div>
+            ) : null}
           </Link>
           {isLoggedIn ? (
             <Link href="/user-profile" className="flex items-center">

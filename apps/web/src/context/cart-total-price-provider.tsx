@@ -29,6 +29,10 @@ export const CartTotalPriceProvider = ({
       try {
         const response = await fetch(
           'http://localhost:8000/api/v1/carts/current',
+          {
+            method: 'GET',
+            credentials: 'include',
+          },
         );
         const data = await response.json();
         setCartItems(data.CartItem);
@@ -41,8 +45,8 @@ export const CartTotalPriceProvider = ({
   }, []);
 
   useEffect(() => {
-    const newTotalPrice = cartItems.reduce((acc, curr) => {
-      return acc + curr?.Product?.price * curr?.quantity;
+    const newTotalPrice = cartItems?.reduce((acc, curr) => {
+      return acc + (curr?.Product?.price ?? 0) * (curr?.quantity ?? 0);
     }, 0);
     setTotalPrice(newTotalPrice);
   }, [cartItems]);

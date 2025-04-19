@@ -18,6 +18,13 @@ export async function getProducts(
           mode: 'insensitive', // Optional: make the search case-insensitive
         },
       },
+      include: {
+        ProductImage: {
+          select: {
+            imageUrl: true,
+          },
+        },
+      },
     });
 
     res.json(products); // Send the filtered products as a response
@@ -81,7 +88,8 @@ export async function addToCart(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const { userId, productId, quantity } = req.body;
+  const { productId, quantity } = req.body;
+  const userId = req.user?.id;
 
   try {
     const product = await prisma.product.findUnique({

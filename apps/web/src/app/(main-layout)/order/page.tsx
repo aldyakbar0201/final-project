@@ -55,7 +55,7 @@ interface Order {
   cancelledAt: string | null;
   createdAt: string;
   updatedAt: string;
-  Items: OrderItem[];
+  OrderItems: OrderItem[];
   User: User;
 }
 
@@ -66,11 +66,13 @@ export default function Order() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const response = await fetch(
-          'http://localhost:8000/api/v1/orders/9b10842f-23e4-499a-ad0d-2617ece90344',
-        );
-        const data: Order = await response.json();
-        setOrder(data);
+        const response = await fetch('http://localhost:8000/api/v1/orders', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        setOrder(data[0]);
+
         setLoading(false);
       } catch (error) {
         console.error('Error:', error);
@@ -103,6 +105,8 @@ export default function Order() {
     );
   }
 
+  console.log(order);
+
   return (
     <>
       <section className="m-20">
@@ -123,7 +127,7 @@ export default function Order() {
             <div className="flex gap-5">
               <Image
                 src={
-                  order.Items?.[0]?.Product?.ProductImage?.[0]?.imageUrl ||
+                  order.OrderItems?.[0]?.Product?.ProductImage?.[0]?.imageUrl ||
                   '/home.svg'
                 }
                 width={100}
@@ -133,10 +137,14 @@ export default function Order() {
               />
               <div>
                 <p className="text-2xl font-bold">
-                  {order.Items?.map((item) => item.Product.name).join(', ')}
+                  {order.OrderItems?.map((item) => item.Product.name).join(
+                    ', ',
+                  )}
                 </p>
                 <p>
-                  {order.Items?.map((item) => `x${item.quantity}`).join(', ')}
+                  {order.OrderItems?.map((item) => `x${item.quantity}`).join(
+                    ', ',
+                  )}
                 </p>
               </div>
             </div>

@@ -21,6 +21,8 @@ interface CartItemsType {
 
 interface CartContextType {
   cartItems: CartItemsType[];
+  cartQuantity: number | null;
+  setCartQuantity: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 export const CartContext = createContext<CartContextType | undefined>(
@@ -29,6 +31,7 @@ export const CartContext = createContext<CartContextType | undefined>(
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItemsType[]>([]);
+  const [cartQuantity, setCartQuantity] = useState<number | null>(null);
 
   /* -------------------------------------------------------------------------- */
   /*                                     GET                                    */
@@ -38,9 +41,20 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const response = await fetch(
           'http://localhost:8000/api/v1/carts/current',
+          {
+            credentials: 'include',
+          },
         );
         const data = await response.json();
+
         setCartItems(data.CartItem);
+        if (data && data.CartItem) {
+          setCartQuantity(
+            data.CartItem.reduce((acc: number, curr: CartItemsType) => {
+              return acc + curr.quantity;
+            }, 0),
+          );
+        }
       } catch (error) {
         console.error(error);
       }
@@ -53,50 +67,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     <CartContext.Provider
       value={{
         cartItems,
+        cartQuantity,
+        setCartQuantity,
       }}
     >
       {children}
     </CartContext.Provider>
   );
 };
-
-/* -------------------------------------------------------------------------- */
-/*                                   UPDATE                                   */
-/* -------------------------------------------------------------------------- */
-// useEffect(() => {
-//   async function updateCartItem() {
-//     try {
-//       const response = await fetch('http://localhost:8000/api/v1/carts/update', {
-//         method: 'PUT',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ quantity, productId }),
-//       });
-//       const data = await response.json();
-//       console.log(data);
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   }
-
-//   updateCartItem();
-// }, [order, price]);
-
-/* -------------------------------------------------------------------------- */
-/*                                   UPLOAD                                   */
-/* -------------------------------------------------------------------------- */
-// useEffect(() => {
-//   async function postOrders() {
-//     try {
-//       const response = await axios.post('http://localhost:8000/api/v1/orders',{
-//         //must be filled
-//       });
-//       const data = response.data;
-
-//       console.log(data);
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   }
-// },[])

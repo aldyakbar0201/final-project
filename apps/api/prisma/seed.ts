@@ -196,10 +196,11 @@ async function createProducts(
       price: 15000, // IDR price
       categoryId: categories[0].id, // Fruits & Vegetables
       storeId: stores[0].id, // Fresh Market
+      weight: 1,
       ProductImage: {
         create: {
-          productId: '1',
-          imageUrl: 'https://example.com/images/apples.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1630563451961-ac2ff27616ab?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -211,8 +212,8 @@ async function createProducts(
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
         create: {
-          productId: '2',
-          imageUrl: 'https://example.com/images/milk.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1634141510639-d691d86f47be?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -224,8 +225,8 @@ async function createProducts(
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
         create: {
-          productId: '3',
-          imageUrl: 'https://example.com/images/bread.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1533782654613-826a072dd6f3?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -237,8 +238,8 @@ async function createProducts(
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
         create: {
-          productId: '4',
-          imageUrl: 'https://example.com/images/eggs.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=1943&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -250,8 +251,8 @@ async function createProducts(
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
         create: {
-          productId: '5',
-          imageUrl: 'https://example.com/images/chicken.jpg',
+          imageUrl:
+            'https://plus.unsplash.com/premium_photo-1669742928112-19364a33b530?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -263,8 +264,8 @@ async function createProducts(
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
         create: {
-          productId: '6',
-          imageUrl: 'https://example.com/images/water.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1653299296556-9b779f598e7b?q=80&w=1992&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -276,8 +277,8 @@ async function createProducts(
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
         create: {
-          productId: '7',
-          imageUrl: 'https://example.com/images/chips.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1613462847848-f65a8b231bb5?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -289,8 +290,8 @@ async function createProducts(
       storeId: stores[1].id, // Organic Grocers
       ProductImage: {
         create: {
-          productId: '8',
-          imageUrl: 'https://example.com/images/tomatoes.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1598512752271-33f913a5af13?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -302,8 +303,8 @@ async function createProducts(
       storeId: stores[2].id, // Value Supermarket
       ProductImage: {
         create: {
-          productId: '9',
-          imageUrl: 'https://example.com/images/pizza.jpg',
+          imageUrl:
+            'https://plus.unsplash.com/premium_photo-1661762555601-47d088a26b50?q=80&w=2092&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -315,8 +316,8 @@ async function createProducts(
       storeId: stores[0].id, // Fresh Market
       ProductImage: {
         create: {
-          productId: '10',
-          imageUrl: 'https://example.com/images/detergent.jpg',
+          imageUrl:
+            'https://images.unsplash.com/photo-1624372635282-b324bcdd4907?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         },
       },
     },
@@ -487,7 +488,7 @@ async function createOrders(
           userId: regularUser.id,
           street: '123 Customer Street',
           city: 'Customer City',
-          postalCode: 12345,
+          postalCode: 11450,
           isDefault: true,
           latitude: -6.2088,
           longitude: 106.8456,
@@ -503,7 +504,7 @@ async function createOrders(
         orderNumber: 'ORD-' + Date.now().toString().substring(7),
         addressId: userAddress.id,
         orderStatus: OrderStatus.COMPLETED,
-        paymentMethod: 'BANK_TRANSFER',
+        paymentMethod: 'Midtrans',
         paymentProof: 'https://example.com/proof.jpg',
         paymentProofTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
         paymentDueDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
@@ -562,7 +563,7 @@ async function createOrders(
           orderNumber: 'ORD-' + (Date.now() + 1).toString().substring(7),
           addressId: userAddress.id,
           orderStatus: OrderStatus.PENDING_PAYMENT,
-          paymentMethod: 'PAYMENT_GATEWAY',
+          paymentMethod: 'Manual',
           paymentDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
           shippingMethod: 'Express Delivery',
           shippingCost: 25000, // IDR price
@@ -652,7 +653,7 @@ main()
 //   // Create Users
 //   const hashedPassword = await hash('password123', 10);
 
-//   const superAdmin = await prisma.user.create({
+//   await prisma.user.create({
 //     data: {
 //       name: 'Super Admin',
 //       email: 'superadmin@freshmarket.com',
@@ -719,7 +720,7 @@ main()
 //     },
 //   });
 
-//   const address2 = await prisma.address.create({
+//   await prisma.address.create({
 //     data: {
 //       userId: customer1.id,
 //       street: 'Jl. Sudirman No. 456',
@@ -815,7 +816,7 @@ main()
 //   console.log('Carts created');
 
 //   // Create Cart Items
-//   const cartItem1 = await prisma.cartItem.create({
+//   await prisma.cartItem.create({
 //     data: {
 //       cartId: cart1.id,
 //       productId: 1, // We'll create this product later
@@ -823,7 +824,7 @@ main()
 //     },
 //   });
 
-//   const cartItem2 = await prisma.cartItem.create({
+//   await prisma.cartItem.create({
 //     data: {
 //       cartId: cart1.id,
 //       productId: 2, // We'll create this product later
@@ -831,7 +832,7 @@ main()
 //     },
 //   });
 
-//   const cartItem3 = await prisma.cartItem.create({
+//   await prisma.cartItem.create({
 //     data: {
 //       cartId: cart2.id,
 //       productId: 3, // We'll create this product later
@@ -849,7 +850,7 @@ main()
 //       price: 15000,
 //       categoryId: vegetableCategory.id,
 //       storeId: store1.id,
-//       cartItemId: cartItem1.id,
+//       // cartItemId: cartItem1.id, // Removed as it is not a valid property
 //     },
 //   });
 
@@ -860,7 +861,7 @@ main()
 //       price: 25000,
 //       categoryId: fruitCategory.id,
 //       storeId: store1.id,
-//       cartItemId: cartItem2.id,
+//       // cartItemId: cartItem2.id,
 //     },
 //   });
 
@@ -871,7 +872,7 @@ main()
 //       price: 18000,
 //       categoryId: dairyCategory.id,
 //       storeId: store2.id,
-//       cartItemId: cartItem3.id,
+//       // cartItemId: cartItem3.id,
 //     },
 //   });
 
@@ -882,37 +883,37 @@ main()
 //       price: 45000,
 //       categoryId: meatCategory.id,
 //       storeId: store2.id,
-//       cartItemId: cartItem1.id,
+//       // cartItemId: cartItem1.id,
 //     },
 //   });
 
 //   console.log('Products created');
 
 //   // Create Product Images
-//   const tomatoImage = await prisma.productImage.create({
+//   await prisma.productImage.create({
 //     data: {
-//       productId: tomatoes.id.toString(),
+//       productId: tomatoes.id,
 //       imageUrl: 'https://images.unsplash.com/photo-1607305387299-a3d9611cd469',
 //     },
 //   });
 
-//   const appleImage = await prisma.productImage.create({
+//   await prisma.productImage.create({
 //     data: {
-//       productId: apples.id.toString(),
+//       productId: apples.id,
 //       imageUrl: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2',
 //     },
 //   });
 
-//   const milkImage = await prisma.productImage.create({
+//   await prisma.productImage.create({
 //     data: {
-//       productId: milk.id.toString(),
+//       productId: milk.id,
 //       imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b',
 //     },
 //   });
 
-//   const chickenImage = await prisma.productImage.create({
+//   await prisma.productImage.create({
 //     data: {
-//       productId: chicken.id.toString(),
+//       productId: chicken.id,
 //       imageUrl: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791',
 //     },
 //   });
@@ -955,7 +956,7 @@ main()
 //   console.log('Stocks created');
 
 //   // Create Stock Logs
-//   const tomatoStockLog = await prisma.stockLog.create({
+//   await prisma.stockLog.create({
 //     data: {
 //       stockId: tomatoStock.id,
 //       change: 100,
@@ -963,7 +964,7 @@ main()
 //     },
 //   });
 
-//   const appleStockLog = await prisma.stockLog.create({
+//   await prisma.stockLog.create({
 //     data: {
 //       stockId: appleStock.id,
 //       change: 75,
@@ -971,7 +972,7 @@ main()
 //     },
 //   });
 
-//   const milkStockLog = await prisma.stockLog.create({
+//   await prisma.stockLog.create({
 //     data: {
 //       stockId: milkStock.id,
 //       change: 50,
@@ -979,7 +980,7 @@ main()
 //     },
 //   });
 
-//   const chickenStockLog = await prisma.stockLog.create({
+//   await prisma.stockLog.create({
 //     data: {
 //       stockId: chickenStock.id,
 //       change: 30,
@@ -1018,7 +1019,7 @@ main()
 //   console.log('Discounts created');
 
 //   // Create Vouchers
-//   const productVoucher = await prisma.voucher.create({
+//   await prisma.voucher.create({
 //     data: {
 //       code: 'APPLE5K',
 //       type: VoucherType.PRODUCT_SPECIFIC,
@@ -1028,7 +1029,7 @@ main()
 //     },
 //   });
 
-//   const shippingVoucher = await prisma.voucher.create({
+//   await prisma.voucher.create({
 //     data: {
 //       code: 'FREESHIP',
 //       type: VoucherType.SHIPPING,
@@ -1044,7 +1045,7 @@ main()
 //     data: {
 //       userId: customer1.id,
 //       storeId: store1.id,
-//       addressId: address1.id.toString(),
+//       addressId: address1.id,
 //       orderNumber: 'ORD-2025-001',
 //       orderStatus: OrderStatus.COMPLETED,
 //       paymentMethod: 'Midtrans',
@@ -1063,7 +1064,7 @@ main()
 //     data: {
 //       userId: customer2.id,
 //       storeId: store2.id,
-//       addressId: address3.id.toString(),
+//       addressId: address3.id,
 //       orderNumber: 'ORD-2025-002',
 //       orderStatus: OrderStatus.PENDING_PAYMENT,
 //       paymentMethod: 'Manual',
@@ -1079,7 +1080,7 @@ main()
 //   console.log('Orders created');
 
 //   // Create Order Items
-//   const orderItem1 = await prisma.orderItem.create({
+//   await prisma.orderItem.create({
 //     data: {
 //       orderId: order1.id,
 //       cartId: cart1.id,
@@ -1089,7 +1090,7 @@ main()
 //     },
 //   });
 
-//   const orderItem2 = await prisma.orderItem.create({
+//   await prisma.orderItem.create({
 //     data: {
 //       orderId: order1.id,
 //       cartId: cart1.id,
@@ -1099,7 +1100,7 @@ main()
 //     },
 //   });
 
-//   const orderItem3 = await prisma.orderItem.create({
+//   await prisma.orderItem.create({
 //     data: {
 //       orderId: order2.id,
 //       cartId: cart2.id,
@@ -1109,7 +1110,7 @@ main()
 //     },
 //   });
 
-//   const orderItem4 = await prisma.orderItem.create({
+//   await prisma.orderItem.create({
 //     data: {
 //       orderId: order2.id,
 //       cartId: cart2.id,
@@ -1122,7 +1123,7 @@ main()
 //   console.log('Order Items created');
 
 //   // Create Sales Reports
-//   const salesReport1 = await prisma.salesReport.create({
+//   await prisma.salesReport.create({
 //     data: {
 //       storeId: store1.id,
 //       productId: tomatoes.id,
@@ -1133,7 +1134,7 @@ main()
 //     },
 //   });
 
-//   const salesReport2 = await prisma.salesReport.create({
+//   await prisma.salesReport.create({
 //     data: {
 //       storeId: store1.id,
 //       productId: apples.id,
@@ -1144,7 +1145,7 @@ main()
 //     },
 //   });
 
-//   const salesReport3 = await prisma.salesReport.create({
+//   await prisma.salesReport.create({
 //     data: {
 //       storeId: store2.id,
 //       productId: milk.id,
@@ -1158,7 +1159,7 @@ main()
 //   console.log('Sales Reports created');
 
 //   // Create Stock Reports
-//   const stockReport1 = await prisma.stockReport.create({
+//   await prisma.stockReport.create({
 //     data: {
 //       storeId: store1.id,
 //       productId: tomatoes.id,
@@ -1171,7 +1172,7 @@ main()
 //     },
 //   });
 
-//   const stockReport2 = await prisma.stockReport.create({
+//   await prisma.stockReport.create({
 //     data: {
 //       storeId: store1.id,
 //       productId: apples.id,
@@ -1184,7 +1185,7 @@ main()
 //     },
 //   });
 
-//   const stockReport3 = await prisma.stockReport.create({
+//   await prisma.stockReport.create({
 //     data: {
 //       storeId: store2.id,
 //       productId: milk.id,
@@ -1200,14 +1201,14 @@ main()
 //   console.log('Stock Reports created');
 
 //   // Create Discount Reports
-//   const discountReport1 = await prisma.discountReport.create({
+//   await prisma.discountReport.create({
 //     data: {
 //       userId: customer1.id,
 //       dicountId: tomatoDiscount.id,
 //     },
 //   });
 
-//   const discountReport2 = await prisma.discountReport.create({
+//   await prisma.discountReport.create({
 //     data: {
 //       userId: customer2.id,
 //       dicountId: storeDiscount.id,

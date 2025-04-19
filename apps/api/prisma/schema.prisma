@@ -148,6 +148,7 @@ model Product {
   name        String   @unique
   description String
   price       Float
+  weight      Float
   categoryId  Int
   storeId     Int
   createdAt   DateTime @default(now())
@@ -283,7 +284,7 @@ model StockReport {
 model Cart {
   id         Int      @id @default(autoincrement())
   userId     Int      @unique
-  totalPrice Decimal
+  totalPrice Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -315,7 +316,7 @@ model Order {
   addressId        Int
   orderNumber      String      @unique
   orderStatus      OrderStatus
-  paymentMethod    String
+  paymentMethod    PaymentMethod
   // paymentStatus    PaymentStatus
   paymentProof     String?
   paymentProofTime DateTime?
@@ -334,7 +335,7 @@ model Order {
   // Relations
   User  User        @relation(fields: [userId], references: [id])
   Store Store       @relation(fields: [storeId], references: [id])
-  Items OrderItem[]
+  OrderItems OrderItem[]
 }
 
 model OrderItem {

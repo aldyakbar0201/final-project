@@ -14,6 +14,7 @@ import {
   deleteCategory,
 } from '../controllers/product-controller.js';
 import upload from '../middlewares/upload-middleware.js';
+import { VerifyToken } from '../middlewares/auth-middleware.js';
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.route('/products').get(getProducts);
 router.route('/product/:id').get(getProductDetail);
 
 // Rute untuk menambahkan produk ke keranjang (User Site)
-router.route('/cart').post(addToCart);
+router.route('/cart').post(VerifyToken, addToCart);
 
 // Admin Routes
 // Rute untuk mendapatkan daftar produk (Admin Site)

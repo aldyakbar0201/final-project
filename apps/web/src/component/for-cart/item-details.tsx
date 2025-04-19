@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 export default function ItemDetails({
   image,
+  cartItemId,
   id,
   name,
   price,
@@ -15,8 +16,10 @@ export default function ItemDetails({
   setTotalPrice,
   totalPrice,
   setLocalCart,
+  setCartQuantity,
 }: {
   image: string;
+  cartItemId: number;
   id: number;
   name: string;
   price: number;
@@ -26,26 +29,54 @@ export default function ItemDetails({
   setTotalPrice: (price: number) => void;
   totalPrice: number;
   setLocalCart: (cart: CartItems[]) => void;
+  setCartQuantity: React.Dispatch<React.SetStateAction<number | null>>;
 }) {
   const [itemQuantity, setItemQuantity] = useState(quantity);
   const [itemPrice, setItemPrice] = useState(price * quantity);
+  const formatter = new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+  });
 
-  function handlePlus(price: number) {
+  async function handlePlus(price: number) {
+    await fetch('http://localhost:8000/api/v1/carts/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ cartItemId, quantity: quantity + 1 }),
+    });
     setItemQuantity(itemQuantity + 1);
     setItemPrice((itemQuantity + 1) * price);
     setTotalPrice(totalPrice + price);
+    setCartQuantity((prev) => (prev ? prev + 1 : 0));
   }
 
-  function handleMinus(price: number) {
+  async function handleMinus(price: number) {
     if (itemQuantity > 1) {
+      await fetch('http://localhost:8000/api/v1/carts/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartItemId, quantity: quantity - 1 }),
+      });
       setItemQuantity(itemQuantity - 1);
       setItemPrice((itemQuantity - 1) * price);
       setTotalPrice(totalPrice - price);
+      setCartQuantity((prev) => (prev ? prev - 1 : 0));
     }
   }
 
-  function handleRemove() {
+  async function handleRemove() {
     if (confirm('Are you sure to delete this product?')) {
+      await fetch('http://localhost:8000/api/v1/carts/remove', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartItemId }),
+      });
       // @ts-expect-error don't know yet
       setLocalCart((prev) => prev.filter((item) => item.Product.id !== id));
       setTotalPrice(totalPrice - itemPrice);
@@ -53,7 +84,7 @@ export default function ItemDetails({
   }
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between border-2 p-5 rounded-2xl border-lime-600 shadow-md">
       {/* Image - Always on the left */}
       <div className="relative flex-shrink-0 mr-7 w-32 h-32">
         <Image
@@ -97,7 +128,8 @@ export default function ItemDetails({
         >
           x
         </span>
-        <p className="text-lg font-semibold">{`Rp${itemPrice}`}</p>
+        <p>Price:</p>
+        <p className="text-lg font-semibold">{formatter.format(itemPrice)}</p>
       </div>
     </div>
   );

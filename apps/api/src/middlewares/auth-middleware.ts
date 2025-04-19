@@ -13,6 +13,7 @@ export async function VerifyToken(
       res.status(401).json({ message: 'No token provided' });
       return;
     }
+
     const verifiedUser = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string,
