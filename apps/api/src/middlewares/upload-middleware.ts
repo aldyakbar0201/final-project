@@ -11,7 +11,7 @@ const upload = multer({
     },
   }),
   fileFilter(_req, file, cb) {
-    const accFile = /jpeg|jpg|png|webp|avif/;
+    const accFile = /jpeg|jpg|png|gif/;
     const checkType = accFile.test(
       path.extname(file.originalname).toLowerCase(),
     );
@@ -19,10 +19,10 @@ const upload = multer({
     if (checkType) {
       cb(null, true);
     } else {
-      cb(null, false);
+      cb(new Error('Only images (jpg, jpeg, png, gif) are allowed'));
     }
   },
-  limits: { fileSize: 1000000 },
+  limits: { fileSize: 1 * 1024 * 1024 },
 });
 
 export default upload;

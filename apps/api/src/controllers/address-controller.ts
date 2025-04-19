@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { geocodeAddress } from '../utils/geocoding.js';
+import { convertAddressToCoordinate } from '../utils/geocode.js';
 
 const prisma = new PrismaClient();
 
@@ -23,10 +24,8 @@ export async function addAddress(
     }
 
     // Generate latitude and longitude from address
-    const { latitude, longitude } = await geocodeAddress(
-      street,
-      city,
-      Number(postalCode),
+    const { lat, lng } = await convertAddressToCoordinate(
+      `${street} ${city} ${Number(postalCode)}`,
     );
 
     if (isDefault) {
@@ -43,8 +42,8 @@ export async function addAddress(
         city,
         postalCode: Number(postalCode),
         isDefault: isDefault || false,
-        latitude,
-        longitude,
+        latitude: lat,
+        longitude: lng,
       },
     });
 

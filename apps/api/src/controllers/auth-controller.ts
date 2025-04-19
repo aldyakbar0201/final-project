@@ -11,7 +11,7 @@ import handlebars from 'handlebars';
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
-const { genSalt, hash, compare } = bcrypt;
+const { genSalt, hash } = bcrypt;
 
 export async function register(
   req: Request,
@@ -49,7 +49,7 @@ export async function register(
     });
 
     const confirmToken = crypto.randomBytes(20).toString('hex');
-    const confirmationLink = `http://localhost:8000/api/v1/auth/confirm-email?token=${confirmToken}`;
+    const confirmationLink = `http://localhost:3000/auth/user-onboarding?token=${confirmToken}`;
 
     await prisma.confirmToken.create({
       data: {
@@ -65,7 +65,7 @@ export async function register(
     const compiledTemplate = handlebars.compile(templateSource.toString());
     const htmlTemplate = compiledTemplate({
       name: name,
-      link: confirmationLink,
+      confirmationLink: confirmationLink,
     });
     const { data, error } = await resend.emails.send({
       from: 'Fresh Basket <onboarding@frshbasket.shop>',
@@ -152,7 +152,10 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    const isValidPassword = compare(password, existingUser.password);
+    const isValidPassword = bcrypt.compareSync(
+      password,
+      existingUser.password as string,
+    );
 
     if (!isValidPassword) {
       res.status(401).json({ message: 'Invalid credentials' });
@@ -166,15 +169,20 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       role: existingUser.role,
     };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY as string, {
-      expiresIn: '1h',
+      expiresIn: '1d',
     });
 
     res
       .cookie('accessToken', token, {
         httpOnly: true,
         sameSite: 'lax',
-        secure: false,
-        domain: 'localhost',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? 'frshbasket.shop'
+            : 'localhost',
+        maxAge: 3600000,
       })
       .status(200)
       .json({ ok: true, message: 'Login success' });
@@ -201,13 +209,13 @@ export async function getCurrentUser(
   next: NextFunction,
 ) {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      res.status(401).json({ message: 'Unauthorized' });
+    const userEmail = req.user?.email;
+    if (!userEmail) {
+      res.status(401).json({ message: 'Unauthorized Could not find user' });
       return;
     }
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: userEmail },
     });
 
     if (!user) {
@@ -224,6 +232,32 @@ export async function getCurrentUser(
       emailConfirmed: user.emailConfirmed,
       createdAt: user.createdAt,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function editUserData(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) {
+      res.status(400).json({ message: 'Missing fields' });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { email: req.user?.email },
+      data: { name, email },
+    });
+
+    res.status(200).json({
+      message: 'User updated successfully',
+      user: updatedUser,
+    }); // ⬅️ NO RETURN
   } catch (error) {
     next(error);
   }

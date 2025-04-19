@@ -19,30 +19,26 @@ export async function middleware(request: NextRequest) {
   const verifiedToken = await verifyJwtToken(accessToken!);
 
   if (!accessToken || !verifiedToken) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    return NextResponse.redirect(new URL('/auth/user-login', request.url));
   }
+
+  // return NextResponse.next() --> jika tidak mempunyai role
 
   // const pathname = request.nextUrl.pathname;
   const { pathname } = request.nextUrl;
   const role = verifiedToken.role;
 
-  if (
-    (pathname.startsWith('/dashboard/author') && role === 'AUTHOR') ||
-    (pathname.startsWith('/dashboard/reader') && role === 'READER')
-  ) {
+  if (pathname.startsWith('/user-profile') && role === 'CUSTOMER') {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith('/dashboard')) {
-    if (role === 'AUTHOR')
-      return NextResponse.redirect(new URL('/dashboard/author', request.url));
-    if (role === 'READER')
-      return NextResponse.redirect(new URL('/dashboard/reader', request.url));
+  if (pathname.startsWith('/cart') && role === 'CUSTOMER') {
+    return NextResponse.next();
   }
 
   return NextResponse.redirect(new URL('/not-found', request.url));
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/about', '/blog'],
+  matcher: ['/user-profile/:path*', '/cart/:path*'],
 };

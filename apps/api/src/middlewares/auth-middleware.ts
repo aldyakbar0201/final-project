@@ -18,7 +18,6 @@ export async function VerifyToken(
       token,
       process.env.JWT_SECRET_KEY as string,
     ) as CustomJwtPayload;
-
     req.user = verifiedUser;
 
     next();
