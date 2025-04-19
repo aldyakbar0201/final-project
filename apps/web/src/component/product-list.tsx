@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { ImageOff } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the toastify CSS
+import Link from 'next/link';
 
 interface Product {
   id: number;
@@ -175,7 +176,6 @@ export default function ProductList() {
             </a>
           )}
         </div>
-
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           initial={{ opacity: 0, y: 20 }}
@@ -184,40 +184,42 @@ export default function ProductList() {
         >
           {displayedProducts.length > 0 ? (
             displayedProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative w-full h-48">
-                  {product.ProductImage[0].imageUrl ? (
-                    <Image
-                      src={product.ProductImage[0].imageUrl}
-                      alt={product.name}
-                      fill
-                      className="object-cover rounded-t-lg"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-t-lg">
-                      <ImageOff className="w-12 h-12 text-gray-400" />
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-xl font-bold mt-4">{product.name}</h3>
-                <p className="text-gray-600">{product.description}</p>
-                <p className="text-green-600 font-bold mt-2">
-                  Rp {product.price.toLocaleString('id-ID')}
-                </p>
-                <button
-                  onClick={() => addProductToCart(product.id)}
-                  disabled={!product.ProductImage[0].imageUrl}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+              <Link href={`/product/${product.id}`} key={product.id}>
+                <motion.div
+                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex flex-col h-full"
+                  whileHover={{ scale: 1.03 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <FaShoppingCart className="mr-2" />
-                  Add to Cart
-                </button>
-              </motion.div>
+                  <div className="relative w-full h-48">
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover rounded-t-lg"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-48 bg-gray-200 rounded-t-lg">
+                        <ImageOff className="w-12 h-12 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col mt-4">
+                    <h3 className="text-xl font-bold">{product.name}</h3>
+                    <p className="text-gray-600">{product.description}</p>
+                    <p className="text-green-600 font-bold mt-2">
+                      Rp {product.price.toLocaleString('id-ID')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addProductToCart(product.id)}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center w-full"
+                  >
+                    <FaShoppingCart className="mr-2" />
+                    Add to Cart
+                  </button>
+                </motion.div>
+              </Link>
             ))
           ) : (
             <motion.p

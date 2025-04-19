@@ -196,7 +196,7 @@ async function createProducts(
       price: 15000, // IDR price
       categoryId: categories[0].id, // Fruits & Vegetables
       storeId: stores[0].id, // Fresh Market
-      weight: 1000,
+      weight: 1000, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -210,6 +210,7 @@ async function createProducts(
       price: 25000, // IDR price
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
+      weight: 1000, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -223,6 +224,7 @@ async function createProducts(
       price: 20000, // IDR price
       categoryId: categories[3].id, // Bakery
       storeId: stores[0].id, // Fresh Market
+      weight: 500, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -236,6 +238,7 @@ async function createProducts(
       price: 30000, // IDR price
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
+      weight: 600, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -249,6 +252,7 @@ async function createProducts(
       price: 45000, // IDR price
       categoryId: categories[2].id, // Meat & Seafood
       storeId: stores[2].id, // Value Supermarket
+      weight: 1000, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -262,6 +266,7 @@ async function createProducts(
       price: 35000, // IDR price
       categoryId: categories[4].id, // Beverages
       storeId: stores[0].id, // Fresh Market
+      weight: 12000, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -275,6 +280,7 @@ async function createProducts(
       price: 12000, // IDR price
       categoryId: categories[5].id, // Snacks
       storeId: stores[2].id, // Value Supermarket
+      weight: 200, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -288,6 +294,7 @@ async function createProducts(
       price: 10000, // IDR price
       categoryId: categories[6].id, // Canned Goods
       storeId: stores[1].id, // Organic Grocers
+      weight: 410, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -301,6 +308,7 @@ async function createProducts(
       price: 50000, // IDR price
       categoryId: categories[7].id, // Frozen Foods
       storeId: stores[2].id, // Value Supermarket
+      weight: 500, // in grams
       ProductImage: {
         create: {
           imageUrl:
@@ -314,6 +322,7 @@ async function createProducts(
       price: 60000, // IDR price
       categoryId: categories[8].id, // Household
       storeId: stores[0].id, // Fresh Market
+      weight: 3000, // in grams
       ProductImage: {
         create: {
           imageUrl:

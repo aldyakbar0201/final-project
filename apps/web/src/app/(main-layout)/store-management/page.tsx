@@ -11,6 +11,7 @@ import {
   FaUserPlus,
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { notify } from '@/utils/notify-toast';
 
 interface Store {
   id: number;
@@ -26,6 +27,7 @@ interface Admin {
 }
 
 export default function StoreManagement() {
+  const [loading, setLoading] = useState(false);
   const [stores, setStores] = useState<Store[]>([
     { id: 1, name: 'Toko A', location: 'Jl. A', admin: 'Admin A' },
     { id: 2, name: 'Toko B', location: 'Jl. B', admin: 'Admin B' },
@@ -107,17 +109,76 @@ export default function StoreManagement() {
     }
   };
 
+  const onLogout = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // important for cookies/session
+      });
+      if (response.ok) {
+        window.location.href = '/'; // or to login page
+      } else {
+        notify('Logout failed', {
+          type: 'error',
+          position: 'top-center',
+          autoClose: 1500,
+        });
+      }
+    } catch (error) {
+      notify('Logout error', {
+        type: 'error',
+        position: 'top-center',
+        autoClose: 1500,
+      });
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    setLoading(true);
+    notify('Logging out...', {
+      type: 'info',
+      position: 'top-center',
+      autoClose: 1500,
+    });
+
+    setTimeout(() => {
+      notify('Logged out successfully!', {
+        type: 'success',
+        position: 'top-center',
+        autoClose: 1500,
+      });
+
+      setTimeout(() => {
+        onLogout();
+        setLoading(false);
+      }, 1600);
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen mt-8 ">
       <div className="container mx-auto px-4">
-        <motion.h1
-          className="text-3xl font-bold mb-6"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          Store Management
-        </motion.h1>
+        <div className="flex items-center justify-between mb-6">
+          <motion.h1
+            className="text-3xl font-bold"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Store Management
+          </motion.h1>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            disabled={loading}
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Logging out...' : 'Logout'}
+          </motion.button>
+        </div>
 
         {/* Store Management Section */}
         <motion.div
