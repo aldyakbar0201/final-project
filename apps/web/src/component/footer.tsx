@@ -1,14 +1,8 @@
+'use client';
 import Link from 'next/link';
-import {
-  Home,
-  Box,
-  Info,
-  Phone,
-  Mail,
-  Facebook,
-  Instagram,
-} from 'lucide-react';
+import { Home, Box, Info, Phone, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
   return (
@@ -82,7 +76,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="hover:text-blue-600 transition duration-300"
             >
-              <Facebook className="w-6 h-6 text-gray-600 hover:text-blue-600" />
+              <FaFacebook className="w-6 h-6 text-gray-600 hover:text-blue-600" />
             </a>
             <a
               href="https://instagram.com"
@@ -90,7 +84,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="hover:text-pink-600 transition duration-300"
             >
-              <Instagram className="w-6 h-6 text-gray-600 hover:text-pink-600" />
+              <FaInstagram className="w-6 h-6 text-gray-600 hover:text-pink-600" />
             </a>
           </div>
         </motion.div>
