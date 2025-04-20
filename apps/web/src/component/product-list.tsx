@@ -10,10 +10,15 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the toastify CSS
 import Link from 'next/link';
 
+interface ProductImage {
+  id: number;
+  productId: number;
+  imageUrl: string;
+}
+
 interface Product {
   id: number;
   name: string;
-  image: string | null;
   description: string;
   price: number;
   categoryId: number;
@@ -21,6 +26,16 @@ interface Product {
   ProductImage: {
     imageUrl: string;
   }[];
+  createdAt: string;
+  updatedAt: string;
+  ProductImage: ProductImage[];
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text; // Return the original text if it's short enough
+  }
+  return `${text.slice(0, maxLength)}...`; // Truncate and add "..."
 }
 
 export default function ProductList() {
@@ -191,9 +206,9 @@ export default function ProductList() {
                   transition={{ duration: 0.3 }}
                 >
                   <div className="relative w-full h-48">
-                    {product.image ? (
+                    {product.ProductImage.length > 0 ? (
                       <Image
-                        src={product.image}
+                        src={product.ProductImage[0].imageUrl}
                         alt={product.name}
                         fill
                         className="object-cover rounded-t-lg"
@@ -206,7 +221,9 @@ export default function ProductList() {
                   </div>
                   <div className="flex-1 flex flex-col mt-4">
                     <h3 className="text-xl font-bold">{product.name}</h3>
-                    <p className="text-gray-600">{product.description}</p>
+                    <p className="text-gray-600">
+                      {truncateText(product.description, 100)}
+                    </p>
                     <p className="text-green-600 font-bold mt-2">
                       Rp {product.price.toLocaleString('id-ID')}
                     </p>

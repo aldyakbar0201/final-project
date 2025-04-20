@@ -20,6 +20,7 @@ import uploadPhotoRouter from './routers/upload-user-photo-router.js';
 import addressRouter from './routers/address-router.js';
 import inventoryRouter from './routers/inventory-router.js';
 import reportRouter from './routers/report-router.js';
+import superAdminRouter from './routers/super-admin-router.js';
 
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -60,6 +61,9 @@ app.use('/api/v1/reset-password', resetPasswordRouter);
 
 //address
 app.use('/api/v1/address', addressRouter);
+
+//super admin
+app.use('/api/v1/super-admin', superAdminRouter);
 
 //not found and error
 app.use(notFoundMiddleware);

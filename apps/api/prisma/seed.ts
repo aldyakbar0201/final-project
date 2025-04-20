@@ -1,68 +1,128 @@
-import {
-  PrismaClient,
-  DiscountType,
-  OrderStatus,
-  Category,
-  Store,
-  Product,
-  User,
-} from '@prisma/client';
+import { PrismaClient, Role, User, Product, Store } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { fakerID_ID as faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting database seeding...');
+  console.log('🌱 Starting database seeding...');
 
-  // Clean up existing data (optional)
+  // Clean up existing data (optional, but recommended for fresh seeding)
   await cleanDatabase();
 
-  // Create categories
-  console.log('Creating categories...');
-  const categories = await createCategories();
-
-  // Create users
-  console.log('Creating users...');
+  // Seed Users with specific roles and confirm emails
+  console.log('👤 Creating users with specific roles and confirming emails...');
   const users = await createUsers();
+  console.log(`👤 Created and confirmed ${users.length} users.`);
 
-  // Create stores
-  console.log('Creating stores...');
-  const stores = await createStores();
+  // Seed Addresses
+  console.log('📍 Creating addresses...');
+  const addresses = await createAddresses(users);
+  console.log(`📍 Created ${addresses.length} addresses.`);
 
-  // Create products
-  console.log('Creating products...');
+  // Seed Stores
+  console.log('🏢 Creating stores...');
+  const stores = await createStores(
+    users.filter((user) => user.role === 'STORE_ADMIN'),
+  );
+  console.log(`🏢 Created ${stores.length} stores.`);
+
+  // Seed Categories
+  console.log('🏷️ Creating categories...');
+  const categories = await createCategories();
+  console.log(`🏷️ Created ${categories.length} categories.`);
+
+  // Seed Products
+  console.log('📦 Creating products...');
   const products = await createProducts(categories, stores);
+  console.log(`📦 Created ${products.length} products.`);
 
-  // Create stock for products
-  console.log('Creating stock for products...');
-  await createStock(products);
+  // Seed Product Images
+  console.log('🖼️ Creating product images...');
+  const productImages = await createProductImages(products);
+  console.log(`🖼️ Created ${productImages.length} product images.`);
 
-  // Create discounts
-  console.log('Creating discounts...');
-  await createDiscounts(products);
+  // Seed Stock
+  console.log('Inventory Creating stock...');
+  const stock = await createStock(products, stores);
+  console.log(`Inventory Created ${stock.length} stock entries.`);
 
-  // Create carts for users
-  console.log('Creating carts for users...');
-  await createCarts(users, products);
+  // Seed Stock Logs
+  console.log('📜 Creating stock logs...');
+  const stockLogs = await createStockLogs(stock);
+  console.log(`📜 Created ${stockLogs.length} stock logs.`);
 
-  // Create orders
-  console.log('Creating orders...');
-  await createOrders(users, products, stores);
+  // Seed Discounts
+  console.log('💰 Creating discounts...');
+  const discounts = await createDiscounts(products, stores);
+  console.log(`💰 Created ${discounts.length} discounts.`);
 
-  console.log('Seeding completed successfully!');
+  // Seed Vouchers
+  console.log('🎟️ Creating vouchers...');
+  const vouchers = await createVouchers(products, stores);
+  console.log(`🎟️ Created ${vouchers.length} vouchers.`);
+
+  // Seed Discount Reports
+  console.log('📊 Creating discount reports...');
+  const discountReports = await createDiscountReports(
+    users.filter((user) => user.role === 'CUSTOMER'),
+    discounts,
+  );
+  console.log(`📊 Created ${discountReports.length} discount reports.`);
+
+  // Seed Sales Reports
+  console.log('📈 Creating sales reports...');
+  const salesReports = await createSalesReports(stores, products);
+  console.log(`📈 Created ${salesReports.length} sales reports.`);
+
+  // Seed Stock Reports
+  console.log('📊 Creating stock reports...');
+  const stockReports = await createStockReports(stores, products);
+  console.log(`📊 Created ${stockReports.length} stock reports.`);
+
+  // Seed Carts
+  console.log('🛒 Creating carts...');
+  const carts = await createCarts(
+    users.filter((user) => user.role === 'CUSTOMER'),
+  );
+  console.log(`🛒 Created ${carts.length} carts.`);
+
+  // Seed Cart Items
+  console.log('🛍️ Creating cart items...');
+  const cartItems = await createCartItems(carts, products);
+  console.log(`🛍️ Created ${cartItems.length} cart items.`);
+
+  // Seed Orders
+  console.log('🚚 Creating orders...');
+  const orders = await createOrders(
+    users.filter((user) => user.role === 'CUSTOMER'),
+    stores,
+    addresses,
+  );
+  console.log(`🚚 Created ${orders.length} orders.`);
+
+  // Seed Order Items
+  console.log('📝 Creating order items...');
+  const orderItems = await createOrderItems(orders, products, carts);
+  console.log(`📝 Created ${orderItems.length} order items.`);
+
+  console.log('✅ Database seeding completed successfully!');
 }
 
 async function cleanDatabase() {
-  // Delete all existing data in reverse order of dependencies
+  console.log('🧹 Cleaning database...');
   await prisma.orderItem.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.cartItem.deleteMany({});
   await prisma.cart.deleteMany({});
   await prisma.discountReport.deleteMany({});
   await prisma.discount.deleteMany({});
+  await prisma.voucher.deleteMany({});
   await prisma.stockLog.deleteMany({});
   await prisma.stock.deleteMany({});
   await prisma.productImage.deleteMany({});
+  await prisma.salesReport.deleteMany({}); // Delete Sales Reports first
+  await prisma.stockReport.deleteMany({}); // Delete Stock Reports before Products
   await prisma.product.deleteMany({});
   await prisma.category.deleteMany({});
   await prisma.store.deleteMany({});
@@ -70,550 +130,388 @@ async function cleanDatabase() {
   await prisma.resetPasswordToken.deleteMany({});
   await prisma.confirmToken.deleteMany({});
   await prisma.user.deleteMany({});
+  console.log('🧹 Database cleaned.');
 }
 
-async function createUsers(): Promise<User[]> {
-  console.log('Creating users...');
-
-  const passwordHash = await bcrypt.hash('password123', 10);
-
-  // Create regular users
-  await prisma.user.createMany({
-    data: [
-      {
-        name: 'Alice',
-        password: passwordHash,
-        email: 'alice@example.com',
-        emailConfirmed: true,
-        referralCode: 'REF123',
-        provider: 'EMAIL',
-      },
-      {
-        name: 'Bob',
-        password: passwordHash,
-        email: 'bob@example.com',
-        emailConfirmed: true,
-        referralCode: 'REF456',
-        provider: 'EMAIL',
-      },
-      {
-        name: 'Charlie',
-        password: passwordHash,
-        email: 'charlie@example.com',
-        emailConfirmed: true,
-        referralCode: 'REF789',
-        provider: 'EMAIL',
-      },
-    ],
-    skipDuplicates: true,
-  });
-
-  // Create super admin
-  await prisma.user.create({
-    data: {
+async function createUsers() {
+  const passwordHash = await bcrypt.hash('secret123', 10);
+  const usersData = [
+    // Customers
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.CUSTOMER,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.CUSTOMER,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.CUSTOMER,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.CUSTOMER,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.CUSTOMER,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    // Store Admins
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.STORE_ADMIN,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.STORE_ADMIN,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.STORE_ADMIN,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.STORE_ADMIN,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      password: passwordHash,
+      role: Role.STORE_ADMIN,
+      referralCode: faker.string.alphanumeric(8),
+      emailConfirmed: true, // Set emailConfirmed to true
+    },
+    // Super Admin
+    {
       name: 'Super Admin',
       email: 'superadmin@example.com',
       password: passwordHash,
-      role: 'SUPER_ADMIN',
-      referralCode: 'SUPERADMIN123',
-    },
-  });
-
-  // Fetch all users to return
-  return await prisma.user.findMany();
-}
-
-async function createCategories(): Promise<Category[]> {
-  const categories = [
-    { name: 'Fruits & Vegetables' },
-    { name: 'Dairy & Eggs' },
-    { name: 'Meat & Seafood' },
-    { name: 'Bakery' },
-    { name: 'Beverages' },
-    { name: 'Snacks' },
-    { name: 'Canned Goods' },
-    { name: 'Frozen Foods' },
-    { name: 'Household' },
-  ];
-
-  const createdCategories: Category[] = [];
-  for (const category of categories) {
-    const createdCategory = await prisma.category.create({
-      data: category,
-    });
-    createdCategories.push(createdCategory);
-  }
-  return createdCategories;
-}
-
-async function createStores(): Promise<Store[]> {
-  const stores = [
-    {
-      name: 'Fresh Market',
-      userId: 1,
-      address: '123 Main Street, City Center',
-      latitude: -6.2088,
-      longitude: 106.8456,
-      maxDistance: 10.0,
-    },
-    {
-      name: 'Organic Grocers',
-      userId: 2,
-      address: '456 Oak Avenue, Suburb Area',
-      latitude: -6.2254,
-      longitude: 106.8023,
-      maxDistance: 15.0,
-    },
-    {
-      name: 'Value Supermarket',
-      userId: 3,
-      address: '789 Pine Road, Downtown',
-      latitude: -6.1751,
-      longitude: 106.865,
-      maxDistance: 20.0,
+      role: Role.SUPER_ADMIN,
+      referralCode: 'SUPER123',
+      emailConfirmed: true, // Set emailConfirmed to true
     },
   ];
 
-  const createdStores: Store[] = [];
-  for (const store of stores) {
-    const createdStore = await prisma.store.create({
-      data: store,
-    });
-    createdStores.push(createdStore);
-  }
-  return createdStores;
+  return prisma.user
+    .createMany({ data: usersData, skipDuplicates: true })
+    .then(() => prisma.user.findMany());
+}
+
+async function createAddresses(users: User[]) {
+  const addressesData = users.map((user) => ({
+    userId: user.id,
+    street: faker.location.streetAddress(),
+    city: faker.location.city(),
+    postalCode: parseInt(faker.location.zipCode('#####')),
+    isDefault: faker.datatype.boolean(),
+    latitude: faker.location.latitude(),
+    longitude: faker.location.longitude(),
+  }));
+  return prisma.address
+    .createMany({ data: addressesData })
+    .then(() => prisma.address.findMany());
+}
+
+async function createStores(storeAdmins: User[]) {
+  const storesData = storeAdmins.slice(0, 5).map((admin) => ({
+    userId: admin.id,
+    name: faker.company.name(),
+    address: faker.location.streetAddress(),
+    latitude: faker.location.latitude(), // Returns number, correct for Float
+    longitude: faker.location.longitude(), // Returns number, correct for Float
+    maxDistance: faker.number.float({ min: 5, max: 20, fractionDigits: 1 }),
+  }));
+  return prisma.store
+    .createMany({ data: storesData })
+    .then(() => prisma.store.findMany());
+}
+
+async function createCategories() {
+  const categoriesData = Array.from({ length: 5 }, () => ({
+    name: faker.commerce.department(),
+  }));
+  return prisma.category
+    .createMany({ data: categoriesData, skipDuplicates: true })
+    .then(() => prisma.category.findMany());
 }
 
 async function createProducts(
-  categories: Category[],
-  stores: Store[],
-): Promise<Product[]> {
-  const products = [
-    {
-      name: 'Fresh Apples',
-      description:
-        'Crisp and juicy red apples, perfect for snacking or baking.',
-      price: 15000, // IDR price // in kilograms
-      categoryId: categories[0].id, // Fruits & Vegetables
-      storeId: stores[0].id, // Fresh Market
-      weight: 1000, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1630563451961-ac2ff27616ab?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Organic Milk',
-      description: 'Fresh organic whole milk from grass-fed cows.',
-      price: 25000, // IDR price // in liters
-      categoryId: categories[1].id, // Dairy & Eggs
-      storeId: stores[1].id, // Organic Grocers
-      weight: 1000, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1634141510639-d691d86f47be?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Whole Grain Bread',
-      description: 'Freshly baked whole grain bread with seeds.',
-      price: 20000, // IDR price // in kilograms
-      categoryId: categories[3].id, // Bakery
-      storeId: stores[0].id, // Fresh Market
-      weight: 500, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1533782654613-826a072dd6f3?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Free-Range Eggs',
-      description: 'Farm fresh free-range eggs, dozen pack.',
-      price: 30000, // IDR price // in kilograms
-      categoryId: categories[1].id, // Dairy & Eggs
-      storeId: stores[1].id, // Organic Grocers
-      weight: 600, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=1943&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Chicken Breast',
-      description: 'Boneless, skinless chicken breast, 1 lb pack.',
-      price: 45000, // IDR price // in kilograms
-      categoryId: categories[2].id, // Meat & Seafood
-      storeId: stores[2].id, // Value Supermarket
-      weight: 1000, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://plus.unsplash.com/premium_photo-1669742928112-19364a33b530?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Sparkling Water',
-      description: 'Refreshing sparkling water, 12-pack.',
-      price: 35000, // IDR price // in liters
-      categoryId: categories[4].id, // Beverages
-      storeId: stores[0].id, // Fresh Market
-      weight: 12000, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1653299296556-9b779f598e7b?q=80&w=1992&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Potato Chips',
-      description: 'Crispy potato chips, lightly salted.',
-      price: 12000, // IDR price // in kilograms
-      categoryId: categories[5].id, // Snacks
-      storeId: stores[2].id, // Value Supermarket
-      weight: 200, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1613462847848-f65a8b231bb5?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Canned Tomatoes',
-      description: 'Organic diced tomatoes, 14.5 oz can.',
-      price: 10000, // IDR  // in kilograms
-      categoryId: categories[6].id, // Canned Goods
-      storeId: stores[1].id, // Organic Grocers
-      weight: 410, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1598512752271-33f913a5af13?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Frozen Pizza',
-      description: 'Pepperoni pizza, ready to bake.',
-      price: 50000, // IDR price // in kilograms
-      categoryId: categories[7].id, // Frozen Foods
-      storeId: stores[2].id, // Value Supermarket
-      weight: 500, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://plus.unsplash.com/premium_photo-1661762555601-47d088a26b50?q=80&w=2092&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-    {
-      name: 'Laundry Detergent',
-      description: 'Concentrated laundry detergent, 50 loads.',
-      price: 60000, // IDR price // in kilograms
-      categoryId: categories[8].id, // Household
-      storeId: stores[0].id, // Fresh Market
-      weight: 3000, // in grams
-      ProductImage: {
-        create: {
-          imageUrl:
-            'https://images.unsplash.com/photo-1624372635282-b324bcdd4907?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        },
-      },
-    },
-  ];
-
-  const createdProducts: Product[] = [];
-  for (const product of products) {
-    const { ProductImage, ...productData } = product;
-    const createdProduct = await prisma.product.create({
-      data: {
-        ...productData,
-        ProductImage: ProductImage,
-      },
-    });
-    createdProducts.push(createdProduct);
-  }
-  return createdProducts;
+  categories: { id: number }[],
+  stores: Store[], // Changed type to Store[]
+) {
+  const productsData = Array.from({ length: 20 }, () => ({
+    // Create 20 products
+    storeId: faker.helpers.arrayElement(stores).id,
+    categoryId: faker.helpers.arrayElement(categories).id,
+    name: faker.commerce.productName(),
+    description: faker.commerce.productDescription(),
+    price: parseFloat(faker.commerce.price()),
+  }));
+  return prisma.product
+    .createMany({ data: productsData })
+    .then(() => prisma.product.findMany());
 }
 
-async function createStock(products: Product[]) {
-  for (const product of products) {
-    // Create stock for the product in its store
-    const stock = await prisma.stock.create({
-      data: {
-        productId: product.id,
-        storeId: product.storeId,
-        quantity: Math.floor(Math.random() * 100) + 20, // Random quantity between 20 and 119
-      },
-    });
-
-    // Create a stock log entry for initial stock
-    await prisma.stockLog.create({
-      data: {
-        stockId: stock.id,
-        change: stock.quantity,
-        reason: 'Initial stock',
-      },
-    });
-  }
+async function createProductImages(products: Product[]) {
+  // Changed type to Product[]
+  const productImagesData = products.map((product) => ({
+    productId: product.id,
+    imageUrl: faker.image.url(),
+  }));
+  return prisma.productImage
+    .createMany({ data: productImagesData })
+    .then(() => prisma.productImage.findMany());
 }
 
-async function createDiscounts(products: Product[]) {
-  // Create discounts for some products
-  const discountsData = [
-    {
-      productId: products[0].id, // Apples
-      storeId: products[0].storeId,
-      type: DiscountType.PERCENTAGE,
-      value: 10.0, // 10% off
-      minPurchase: 30000, // IDR price
-      buyOneGetOne: false,
-      maxDiscount: 5000, // IDR price
-      code: 'DISCOUNT10', // Added code
-    },
-    {
-      productId: products[2].id, // Bread
-      storeId: products[2].storeId,
-      type: DiscountType.FIXED_AMOUNT,
-      value: 5000, // IDR price off
-      minPurchase: null,
-      buyOneGetOne: false,
-      maxDiscount: 5000, // IDR price
-      code: 'BREAD5K', // Added code
-    },
-    {
-      productId: products[4].id, // Chicken
-      storeId: products[4].storeId,
-      type: DiscountType.PERCENTAGE,
-      value: 15.0, // 15% off
-      minPurchase: 50000, // IDR price
-      buyOneGetOne: false,
-      maxDiscount: 15000, // IDR price
-      code: 'CHICKEN15', // Added code
-    },
-    {
-      productId: products[6].id, // Chips
-      storeId: products[6].storeId,
-      type: DiscountType.FIXED_AMOUNT,
-      value: 2000, // IDR price off
-      minPurchase: null,
-      buyOneGetOne: true,
-      maxDiscount: 2000, // IDR price
-      code: 'CHIPSBOGO', // Added code
-    },
-  ];
-
-  for (const discountData of discountsData) {
-    await prisma.discount.create({
-      data: discountData,
-    });
-  }
+async function createStock(
+  products: Product[], // Changed type to Product[]
+  _stores: Store[], // Changed type to Store[]
+) {
+  const stockData = products.map((product) => ({
+    storeId: product.storeId, // Now safe to access storeId
+    productId: product.id,
+    quantity: faker.number.int({ min: 10, max: 200 }),
+  }));
+  return prisma.stock
+    .createMany({ data: stockData })
+    .then(() => prisma.stock.findMany());
 }
 
-async function createCarts(users: User[], products: Product[]) {
-  // Create cart for regular users
-  const regularUsers = users.filter(
-    (user) => user.role === 'CUSTOMER' || !user.role,
+async function createStockLogs(stock: { id: number }[]) {
+  const stockLogsData = stock.map((s) => ({
+    stockId: s.id,
+    change: faker.number.int({ min: -50, max: 50 }),
+    reason: faker.lorem.sentence(),
+  }));
+  return prisma.stockLog
+    .createMany({ data: stockLogsData })
+    .then(() => prisma.stockLog.findMany());
+}
+
+async function createDiscounts(
+  products: Product[], // Changed type to Product[]
+  stores: Store[], // Changed type to Store[]
+) {
+  const discountTypes = ['PERCENTAGE', 'FIXED_AMOUNT'] as const;
+  const discountsData = Array.from({ length: 5 }, () => ({
+    storeId: faker.helpers.arrayElement(stores).id,
+    productId: faker.helpers.arrayElement(products).id,
+    code: faker.string.alphanumeric(6).toUpperCase(),
+    type: faker.helpers.arrayElement(discountTypes),
+    value: faker.number.float({ min: 5, max: 50 }),
+    minPurchase: faker.datatype.boolean()
+      ? faker.number.float({ min: 10, max: 100 })
+      : null,
+    buyOneGetOne: faker.datatype.boolean(),
+    maxDiscount: faker.number.float({ min: 10, max: 100 }),
+  }));
+  return prisma.discount
+    .createMany({ data: discountsData })
+    .then(() => prisma.discount.findMany());
+}
+
+async function createVouchers(
+  products: Product[], // Changed type to Product[]
+  stores: Store[], // Changed type to Store[]
+) {
+  const voucherTypes = [
+    'PRODUCT_SPECIFIC',
+    'TOTAL_PURCHASE',
+    'SHIPPING',
+  ] as const;
+  const vouchersData = Array.from({ length: 5 }, () => ({
+    storeId: faker.helpers.arrayElement(stores).id,
+    productId: faker.datatype.boolean()
+      ? faker.helpers.arrayElement(products).id
+      : null,
+    code: faker.string.alphanumeric(8).toUpperCase(),
+    type: faker.helpers.arrayElement(voucherTypes),
+    value: faker.number.float({ min: 5, max: 30 }),
+  }));
+  return prisma.voucher
+    .createMany({ data: vouchersData })
+    .then(() => prisma.voucher.findMany());
+}
+
+async function createDiscountReports(
+  customers: { id: number }[],
+  discounts: { id: number }[],
+) {
+  const discountReportsData = customers.slice(0, 5).map((customer) => ({
+    userId: customer.id,
+    dicountId: faker.helpers.arrayElement(discounts).id,
+  }));
+  return prisma.discountReport
+    .createMany({ data: discountReportsData })
+    .then(() => prisma.discountReport.findMany());
+}
+
+async function createSalesReports(
+  stores: Store[], // Changed type to Store[]
+  products: Product[], // Changed type to Product[]
+) {
+  const salesReportsData = Array.from({ length: 5 }, () => ({
+    storeId: faker.helpers.arrayElement(stores).id,
+    productId: faker.helpers.arrayElement(products).id,
+    Quantity: faker.number.int({ min: 1, max: 10 }),
+    total: parseFloat(faker.commerce.price()),
+    month: faker.number.int({ min: 1, max: 12 }),
+    year: new Date().getFullYear(),
+    createdAt: faker.date.past(),
+  }));
+  return prisma.salesReport
+    .createMany({ data: salesReportsData })
+    .then(() => prisma.salesReport.findMany());
+}
+
+async function createStockReports(
+  stores: Store[], // Changed type to Store[]
+  products: Product[], // Changed type to Product[]
+) {
+  const stockReportsData = Array.from({ length: 5 }, () => ({
+    storeId: faker.helpers.arrayElement(stores).id,
+    productId: faker.helpers.arrayElement(products).id,
+    startStock: faker.number.int({ min: 50, max: 150 }),
+    endStock: faker.number.int({ min: 20, max: 100 }),
+    totalAdded: faker.number.int({ min: 10, max: 50 }),
+    totalReduced: faker.number.int({ min: 10, max: 50 }),
+    month: faker.number.int({ min: 1, max: 12 }),
+    year: new Date().getFullYear(),
+    createdAt: faker.date.past(),
+  }));
+  return prisma.stockReport
+    .createMany({ data: stockReportsData })
+    .then(() => prisma.stockReport.findMany());
+}
+
+async function createCarts(customers: { id: number }[]) {
+  const cartsData = customers.slice(0, 5).map((customer) => ({
+    userId: customer.id,
+    totalPrice: 0,
+  }));
+  return prisma.cart
+    .createMany({ data: cartsData })
+    .then(() => prisma.cart.findMany());
+}
+
+
+async function createCartItems(
+  carts: { id: number }[],
+  products: Product[], // Changed type to Product[]
+) {
+  const cartItemsData = carts.flatMap((cart) =>
+    Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => ({
+      cartId: cart.id,
+      productId: faker.helpers.arrayElement(products).id,
+      quantity: faker.number.int({ min: 1, max: 5 }),
+    })),
   );
-
-  for (const user of regularUsers) {
-    const cart = await prisma.cart.create({
-      data: {
-        userId: user.id,
-        totalPrice: 0,
-      },
-    });
-
-    // Add some items to the cart (only for first user to keep it simple)
-    if (user.id === regularUsers[0].id) {
-      const cartItems = [
-        {
-          cartId: cart.id,
-          productId: products[0].id, // Apples
-          quantity: 3,
-        },
-        {
-          cartId: cart.id,
-          productId: products[2].id, // Bread
-          quantity: 1,
-        },
-        {
-          cartId: cart.id,
-          productId: products[5].id, // Water
-          quantity: 2,
-        },
-      ];
-
-      let totalPrice = 0;
-      for (const item of cartItems) {
-        await prisma.cartItem.create({
-          data: item,
-        });
-
-        const product = products.find((p) => p.id === item.productId);
-        if (product) {
-          totalPrice += product.price * item.quantity;
-        }
-      }
-
-      // Update cart total price
-      await prisma.cart.update({
-        where: { id: cart.id },
-        data: { totalPrice },
-      });
-    }
-  }
+  return prisma.cartItem
+    .createMany({ data: cartItemsData })
+    .then(() => prisma.cartItem.findMany());
 }
 
 async function createOrders(
-  users: User[],
-  products: Product[],
-  stores: Store[],
+  customers: { id: number }[],
+  stores: Store[], // Changed type to Store[]
+  addresses: { id: number; userId: number }[],
 ) {
-  // Create orders for the first regular user
-  const regularUser = users.find(
-    (user) => user.role === 'CUSTOMER' || !user.role,
-  );
+  const ordersData = customers.slice(0, 5).map((customer) => {
+    const customerAddresses = addresses.filter(
+      (addr) => addr.userId === customer.id,
+    );
+    const randomAddress = faker.helpers.arrayElement(customerAddresses);
+    return {
+      userId: customer.id,
+      storeId: faker.helpers.arrayElement(stores).id,
+      addressId: randomAddress?.id,
+      orderNumber: `ORD-${Date.now()}-${faker.string.alphanumeric(5).toUpperCase()}`, // Removed unnecessary escapes
+      orderStatus: faker.helpers.arrayElement([
+        'PENDING_PAYMENT',
+        'PENDING_CONFIRMATION',
+        'PROCESSING',
+        'SHIPPED',
+        'COMPLETED',
+        'CANCELLED',
+      ]),
+      paymentMethod: faker.helpers.arrayElement(['Midtrans', 'Manual']),
+      paymentDueDate: faker.date.future(),
+      shippingMethod: faker.helpers.arrayElement([
+        'Standard',
+        'Express',
+        'Same-day',
+      ]),
+      shippingCost: parseFloat(
+        faker.commerce.price({ min: 5000, max: 50000, dec: 0 }),
+      ),
+      total: parseFloat(
+        faker.commerce.price({ min: 50000, max: 500000, dec: 0 }),
+      ),
+      notes: faker.datatype.boolean() ? faker.lorem.sentence() : null,
+      createdAt: faker.date.past(),
+      updatedAt: new Date(),
+    };
+  });
+  return prisma.order
+    .createMany({ data: ordersData })
+    .then(() => prisma.order.findMany());
+}
 
-  if (regularUser) {
-    // Create a default address for the user if none exists
-    let userAddress = await prisma.address.findFirst({
-      where: { userId: regularUser.id },
-    });
-
-    if (!userAddress) {
-      userAddress = await prisma.address.create({
-        data: {
-          userId: regularUser.id,
-          street: '123 Customer Street',
-          city: 'Customer City',
-          postalCode: 11450,
-          isDefault: true,
-          latitude: -6.2088,
-          longitude: 106.8456,
-        },
-      });
-    }
-
-    // Create a completed order
-    const completedOrder = await prisma.order.create({
-      data: {
-        userId: regularUser.id,
-        storeId: stores[0].id,
-        orderNumber: 'ORD-' + Date.now().toString().substring(7),
-        addressId: userAddress.id,
-        orderStatus: OrderStatus.COMPLETED,
-        paymentMethod: 'Midtrans',
-        paymentProof: 'https://example.com/proof.jpg',
-        paymentProofTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-        paymentDueDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
-        shippingMethod: 'Standard Delivery',
-        shippingCost: 15000, // IDR price
-        discountTotal: 10000, // IDR price
-        total: 125000, // IDR price
-        notes: 'Please leave at the door',
-        shippedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-        deliveredAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      },
-    });
-
-    // Get user's cart
-    const userCart = await prisma.cart.findFirst({
-      where: { userId: regularUser.id },
-    });
-
-    if (userCart) {
-      // Create order items for the completed order
-      const completedOrderItems = [
-        {
-          orderId: completedOrder.id,
-          cartId: userCart.id,
-          productId: products[0].id, // Apples
-          quantity: 2,
-          price: products[0].price,
-        },
-        {
-          orderId: completedOrder.id,
-          cartId: userCart.id,
-          productId: products[3].id, // Eggs
-          quantity: 1,
-          price: products[3].price,
-        },
-        {
-          orderId: completedOrder.id,
-          cartId: userCart.id,
-          productId: products[7].id, // Canned Tomatoes
-          quantity: 3,
-          price: products[7].price,
-        },
-      ];
-
-      for (const item of completedOrderItems) {
-        await prisma.orderItem.create({
-          data: item,
-        });
-      }
-
-      // Create a pending order
-      const pendingOrder = await prisma.order.create({
-        data: {
-          userId: regularUser.id,
-          storeId: stores[1].id,
-          orderNumber: 'ORD-' + (Date.now() + 1).toString().substring(7),
-          addressId: userAddress.id,
-          orderStatus: OrderStatus.PENDING_PAYMENT,
-          paymentMethod: 'Manual',
-          paymentDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
-          shippingMethod: 'Express Delivery',
-          shippingCost: 25000, // IDR price
-          discountTotal: 0,
-          total: 175000, // IDR price
-          notes: 'Call before delivery',
-        },
-      });
-
-      // Create order items for the pending order
-      const pendingOrderItems = [
-        {
-          orderId: pendingOrder.id,
-          cartId: userCart.id,
-          productId: products[1].id, // Milk
-          quantity: 2,
-          price: products[1].price,
-        },
-        {
-          orderId: pendingOrder.id,
-          cartId: userCart.id,
-          productId: products[4].id, // Chicken
-          quantity: 1,
-          price: products[4].price,
-        },
-        {
-          orderId: pendingOrder.id,
-          cartId: userCart.id,
-          productId: products[8].id, // Frozen Pizza
-          quantity: 2,
-          price: products[8].price,
-        },
-      ];
-
-      for (const item of pendingOrderItems) {
-        await prisma.orderItem.create({
-          data: item,
-        });
-      }
-    }
-  }
+async function createOrderItems(
+  orders: { id: string }[],
+  products: Product[], // Changed type to Product[]
+  carts: { id: number }[],
+) {
+  const orderItemsData = orders.flatMap((order) => {
+    const randomCart = faker.helpers.arrayElement(carts);
+    return Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => ({
+      orderId: order.id,
+      cartId: randomCart?.id,
+      productId: faker.helpers.arrayElement(products).id,
+      quantity: faker.number.int({ min: 1, max: 5 }),
+      price: parseFloat(faker.commerce.price()),
+    }));
+  });
+  return prisma.orderItem
+    .createMany({ data: orderItemsData })
+    .then(() => prisma.orderItem.findMany());
 }
 
 main()
@@ -625,615 +523,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-
-// import { PrismaClient, Role, Provider, DiscountType, VoucherType, OrderStatus } from '@prisma/client';
-// import { hash } from 'bcrypt';
-
-// const prisma = new PrismaClient();
-
-// async function main() {
-//   console.log('Starting seed process...');
-
-//   // Clear existing data to avoid conflicts
-//   await prisma.$transaction([
-//     prisma.orderItem.deleteMany({}),
-//     prisma.order.deleteMany({}),
-//     prisma.cartItem.deleteMany({}),
-//     prisma.cart.deleteMany({}),
-//     prisma.stockLog.deleteMany({}),
-//     prisma.stock.deleteMany({}),
-//     prisma.discountReport.deleteMany({}),
-//     prisma.discount.deleteMany({}),
-//     prisma.voucher.deleteMany({}),
-//     prisma.salesReport.deleteMany({}),
-//     prisma.stockReport.deleteMany({}),
-//     prisma.productImage.deleteMany({}),
-//     prisma.product.deleteMany({}),
-//     prisma.category.deleteMany({}),
-//     prisma.store.deleteMany({}),
-//     prisma.address.deleteMany({}),
-//     prisma.resetPasswordToken.deleteMany({}),
-//     prisma.confirmToken.deleteMany({}),
-//     prisma.user.deleteMany({}),
-//   ]);
-
-//   console.log('Database cleared, creating new seed data...');
-
-//   // Create Users
-//   const hashedPassword = await hash('password123', 10);
-
-//   await prisma.user.create({
-//     data: {
-//       name: 'Super Admin',
-//       email: 'superadmin@freshmarket.com',
-//       emailConfirmed: true,
-//       password: hashedPassword,
-//       role: Role.SUPER_ADMIN,
-//       provider: Provider.EMAIL,
-//       userPhoto: 'https://randomuser.me/api/portraits/men/1.jpg',
-//       referralCode: 'SUPER001',
-//     },
-//   });
-
-//   const storeAdmin = await prisma.user.create({
-//     data: {
-//       name: 'Store Admin',
-//       email: 'storeadmin@freshmarket.com',
-//       emailConfirmed: true,
-//       password: hashedPassword,
-//       role: Role.STORE_ADMIN,
-//       provider: Provider.EMAIL,
-//       userPhoto: 'https://randomuser.me/api/portraits/women/2.jpg',
-//       referralCode: 'STORE001',
-//     },
-//   });
-
-//   const customer1 = await prisma.user.create({
-//     data: {
-//       name: 'John Doe',
-//       email: 'john@example.com',
-//       emailConfirmed: true,
-//       password: hashedPassword,
-//       role: Role.CUSTOMER,
-//       provider: Provider.EMAIL,
-//       userPhoto: 'https://randomuser.me/api/portraits/men/3.jpg',
-//       referralCode: 'JOHND001',
-//     },
-//   });
-
-//   const customer2 = await prisma.user.create({
-//     data: {
-//       name: 'Jane Smith',
-//       email: 'jane@example.com',
-//       emailConfirmed: true,
-//       password: hashedPassword,
-//       role: Role.CUSTOMER,
-//       provider: Provider.GOOGLE,
-//       userPhoto: 'https://randomuser.me/api/portraits/women/4.jpg',
-//       referralCode: 'JANES001',
-//     },
-//   });
-
-//   console.log('Users created');
-
-//   // Create Address
-//   const address1 = await prisma.address.create({
-//     data: {
-//       userId: customer1.id,
-//       street: 'Jl. Merdeka No. 123',
-//       city: 'Jakarta',
-//       postalCode: 12345,
-//       isDefault: true,
-//       latitude: -6.175110,
-//       longitude: 106.865036,
-//     },
-//   });
-
-//   await prisma.address.create({
-//     data: {
-//       userId: customer1.id,
-//       street: 'Jl. Sudirman No. 456',
-//       city: 'Jakarta',
-//       postalCode: 12346,
-//       isDefault: false,
-//       latitude: -6.195110,
-//       longitude: 106.875036,
-//     },
-//   });
-
-//   const address3 = await prisma.address.create({
-//     data: {
-//       userId: customer2.id,
-//       street: 'Jl. Gatot Subroto No. 789',
-//       city: 'Jakarta',
-//       postalCode: 12347,
-//       isDefault: true,
-//       latitude: -6.235110,
-//       longitude: 106.885036,
-//     },
-//   });
-
-//   console.log('Addresses created');
-
-//   // Create Stores
-//   const store1 = await prisma.store.create({
-//     data: {
-//       name: 'FreshMarket Central',
-//       userId: storeAdmin.id,
-//       address: 'Jl. Thamrin No. 10, Jakarta',
-//       latitude: -6.195110,
-//       longitude: 106.823036,
-//       maxDistance: 10.0,
-//     },
-//   });
-
-//   const store2 = await prisma.store.create({
-//     data: {
-//       name: 'FreshMarket Express',
-//       userId: storeAdmin.id,
-//       address: 'Jl. Kuningan No. 25, Jakarta',
-//       latitude: -6.235110,
-//       longitude: 106.833036,
-//       maxDistance: 7.5,
-//     },
-//   });
-
-//   console.log('Stores created');
-
-//   // Create Categories
-//   const vegetableCategory = await prisma.category.create({
-//     data: {
-//       name: 'Vegetables',
-//     },
-//   });
-
-//   const fruitCategory = await prisma.category.create({
-//     data: {
-//       name: 'Fruits',
-//     },
-//   });
-
-//   const dairyCategory = await prisma.category.create({
-//     data: {
-//       name: 'Dairy',
-//     },
-//   });
-
-//   const meatCategory = await prisma.category.create({
-//     data: {
-//       name: 'Meat & Poultry',
-//     },
-//   });
-
-//   console.log('Categories created');
-
-//   // Create Carts
-//   const cart1 = await prisma.cart.create({
-//     data: {
-//       userId: customer1.id,
-//       totalPrice: 0,
-//     },
-//   });
-
-//   const cart2 = await prisma.cart.create({
-//     data: {
-//       userId: customer2.id,
-//       totalPrice: 0,
-//     },
-//   });
-
-//   console.log('Carts created');
-
-//   // Create Cart Items
-//   await prisma.cartItem.create({
-//     data: {
-//       cartId: cart1.id,
-//       productId: 1, // We'll create this product later
-//       quantity: 2,
-//     },
-//   });
-
-//   await prisma.cartItem.create({
-//     data: {
-//       cartId: cart1.id,
-//       productId: 2, // We'll create this product later
-//       quantity: 1,
-//     },
-//   });
-
-//   await prisma.cartItem.create({
-//     data: {
-//       cartId: cart2.id,
-//       productId: 3, // We'll create this product later
-//       quantity: 3,
-//     },
-//   });
-
-//   console.log('Cart Items created');
-
-//   // Create Products
-//   const tomatoes = await prisma.product.create({
-//     data: {
-//       name: 'Fresh Tomatoes',
-//       description: 'Locally grown fresh tomatoes',
-//       price: 15000,
-//       categoryId: vegetableCategory.id,
-//       storeId: store1.id,
-//       // cartItemId: cartItem1.id, // Removed as it is not a valid property
-//     },
-//   });
-
-//   const apples = await prisma.product.create({
-//     data: {
-//       name: 'Green Apples',
-//       description: 'Imported green apples',
-//       price: 25000,
-//       categoryId: fruitCategory.id,
-//       storeId: store1.id,
-//       // cartItemId: cartItem2.id,
-//     },
-//   });
-
-//   const milk = await prisma.product.create({
-//     data: {
-//       name: 'Fresh Milk',
-//       description: 'Pasteurized fresh milk',
-//       price: 18000,
-//       categoryId: dairyCategory.id,
-//       storeId: store2.id,
-//       // cartItemId: cartItem3.id,
-//     },
-//   });
-
-//   const chicken = await prisma.product.create({
-//     data: {
-//       name: 'Chicken Breast',
-//       description: 'Boneless chicken breast',
-//       price: 45000,
-//       categoryId: meatCategory.id,
-//       storeId: store2.id,
-//       // cartItemId: cartItem1.id,
-//     },
-//   });
-
-//   console.log('Products created');
-
-//   // Create Product Images
-//   await prisma.productImage.create({
-//     data: {
-//       productId: tomatoes.id,
-//       imageUrl: 'https://images.unsplash.com/photo-1607305387299-a3d9611cd469',
-//     },
-//   });
-
-//   await prisma.productImage.create({
-//     data: {
-//       productId: apples.id,
-//       imageUrl: 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2',
-//     },
-//   });
-
-//   await prisma.productImage.create({
-//     data: {
-//       productId: milk.id,
-//       imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b',
-//     },
-//   });
-
-//   await prisma.productImage.create({
-//     data: {
-//       productId: chicken.id,
-//       imageUrl: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791',
-//     },
-//   });
-
-//   console.log('Product Images created');
-
-//   // Create Stock
-//   const tomatoStock = await prisma.stock.create({
-//     data: {
-//       productId: tomatoes.id,
-//       storeId: store1.id,
-//       quantity: 100,
-//     },
-//   });
-
-//   const appleStock = await prisma.stock.create({
-//     data: {
-//       productId: apples.id,
-//       storeId: store1.id,
-//       quantity: 75,
-//     },
-//   });
-
-//   const milkStock = await prisma.stock.create({
-//     data: {
-//       productId: milk.id,
-//       storeId: store2.id,
-//       quantity: 50,
-//     },
-//   });
-
-//   const chickenStock = await prisma.stock.create({
-//     data: {
-//       productId: chicken.id,
-//       storeId: store2.id,
-//       quantity: 30,
-//     },
-//   });
-
-//   console.log('Stocks created');
-
-//   // Create Stock Logs
-//   await prisma.stockLog.create({
-//     data: {
-//       stockId: tomatoStock.id,
-//       change: 100,
-//       reason: 'Initial stock',
-//     },
-//   });
-
-//   await prisma.stockLog.create({
-//     data: {
-//       stockId: appleStock.id,
-//       change: 75,
-//       reason: 'Initial stock',
-//     },
-//   });
-
-//   await prisma.stockLog.create({
-//     data: {
-//       stockId: milkStock.id,
-//       change: 50,
-//       reason: 'Initial stock',
-//     },
-//   });
-
-//   await prisma.stockLog.create({
-//     data: {
-//       stockId: chickenStock.id,
-//       change: 30,
-//       reason: 'Initial stock',
-//     },
-//   });
-
-//   console.log('Stock Logs created');
-
-//   // Create Discounts
-//   const tomatoDiscount = await prisma.discount.create({
-//     data: {
-//       productId: tomatoes.id,
-//       storeId: store1.id,
-//       code: 'TOMATO10',
-//       type: DiscountType.PERCENTAGE,
-//       value: 10,
-//       minPurchase: 20000,
-//       buyOneGetOne: false,
-//       maxDiscount: 5000,
-//     },
-//   });
-
-//   const storeDiscount = await prisma.discount.create({
-//     data: {
-//       storeId: store2.id,
-//       code: 'FRESH20',
-//       type: DiscountType.PERCENTAGE,
-//       value: 20,
-//       minPurchase: 100000,
-//       buyOneGetOne: false,
-//       maxDiscount: 25000,
-//     },
-//   });
-
-//   console.log('Discounts created');
-
-//   // Create Vouchers
-//   await prisma.voucher.create({
-//     data: {
-//       code: 'APPLE5K',
-//       type: VoucherType.PRODUCT_SPECIFIC,
-//       value: 5000,
-//       productId: apples.id,
-//       storeId: store1.id,
-//     },
-//   });
-
-//   await prisma.voucher.create({
-//     data: {
-//       code: 'FREESHIP',
-//       type: VoucherType.SHIPPING,
-//       value: 10000,
-//       storeId: store2.id,
-//     },
-//   });
-
-//   console.log('Vouchers created');
-
-//   // Create Orders
-//   const order1 = await prisma.order.create({
-//     data: {
-//       userId: customer1.id,
-//       storeId: store1.id,
-//       addressId: address1.id,
-//       orderNumber: 'ORD-2025-001',
-//       orderStatus: OrderStatus.COMPLETED,
-//       paymentMethod: 'Midtrans',
-//       paymentDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-//       shippingMethod: 'Regular Delivery',
-//       shippingCost: 15000,
-//       discountTotal: 5000,
-//       total: 50000,
-//       notes: 'Please call before delivery',
-//       shippedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-//       deliveredAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-//     },
-//   });
-
-//   const order2 = await prisma.order.create({
-//     data: {
-//       userId: customer2.id,
-//       storeId: store2.id,
-//       addressId: address3.id,
-//       orderNumber: 'ORD-2025-002',
-//       orderStatus: OrderStatus.PENDING_PAYMENT,
-//       paymentMethod: 'Manual',
-//       paymentDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-//       shippingMethod: 'Express Delivery',
-//       shippingCost: 25000,
-//       discountTotal: 0,
-//       total: 88000,
-//       notes: 'Leave at the front door',
-//     },
-//   });
-
-//   console.log('Orders created');
-
-//   // Create Order Items
-//   await prisma.orderItem.create({
-//     data: {
-//       orderId: order1.id,
-//       cartId: cart1.id,
-//       productId: tomatoes.id,
-//       quantity: 2,
-//       price: 15000,
-//     },
-//   });
-
-//   await prisma.orderItem.create({
-//     data: {
-//       orderId: order1.id,
-//       cartId: cart1.id,
-//       productId: apples.id,
-//       quantity: 1,
-//       price: 25000,
-//     },
-//   });
-
-//   await prisma.orderItem.create({
-//     data: {
-//       orderId: order2.id,
-//       cartId: cart2.id,
-//       productId: milk.id,
-//       quantity: 2,
-//       price: 18000,
-//     },
-//   });
-
-//   await prisma.orderItem.create({
-//     data: {
-//       orderId: order2.id,
-//       cartId: cart2.id,
-//       productId: chicken.id,
-//       quantity: 1,
-//       price: 45000,
-//     },
-//   });
-
-//   console.log('Order Items created');
-
-//   // Create Sales Reports
-//   await prisma.salesReport.create({
-//     data: {
-//       storeId: store1.id,
-//       productId: tomatoes.id,
-//       Quantity: 25,
-//       total: 375000,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   await prisma.salesReport.create({
-//     data: {
-//       storeId: store1.id,
-//       productId: apples.id,
-//       Quantity: 18,
-//       total: 450000,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   await prisma.salesReport.create({
-//     data: {
-//       storeId: store2.id,
-//       productId: milk.id,
-//       Quantity: 32,
-//       total: 576000,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   console.log('Sales Reports created');
-
-//   // Create Stock Reports
-//   await prisma.stockReport.create({
-//     data: {
-//       storeId: store1.id,
-//       productId: tomatoes.id,
-//       startStock: 100,
-//       endStock: 75,
-//       totalAdded: 0,
-//       totalReduced: 25,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   await prisma.stockReport.create({
-//     data: {
-//       storeId: store1.id,
-//       productId: apples.id,
-//       startStock: 75,
-//       endStock: 57,
-//       totalAdded: 0,
-//       totalReduced: 18,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   await prisma.stockReport.create({
-//     data: {
-//       storeId: store2.id,
-//       productId: milk.id,
-//       startStock: 50,
-//       endStock: 68,
-//       totalAdded: 50,
-//       totalReduced: 32,
-//       month: 3,
-//       year: 2025,
-//     },
-//   });
-
-//   console.log('Stock Reports created');
-
-//   // Create Discount Reports
-//   await prisma.discountReport.create({
-//     data: {
-//       userId: customer1.id,
-//       dicountId: tomatoDiscount.id,
-//     },
-//   });
-
-//   await prisma.discountReport.create({
-//     data: {
-//       userId: customer2.id,
-//       dicountId: storeDiscount.id,
-//     },
-//   });
-
-//   console.log('Discount Reports created');
-
-//   console.log('Seed data created successfully!');
-// }
-
-// main()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });

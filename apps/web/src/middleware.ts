@@ -19,7 +19,9 @@ export async function middleware(request: NextRequest) {
   const verifiedToken = await verifyJwtToken(accessToken!);
 
   if (!accessToken || !verifiedToken) {
-    return NextResponse.redirect(new URL('/auth/user-login', request.url));
+    const url = new URL('/auth/user-login', request.url);
+    url.searchParams.set('error', 'unauthorized');
+    return NextResponse.redirect(url);
   }
 
   // return NextResponse.next() --> jika tidak mempunyai role
@@ -36,9 +38,13 @@ export async function middleware(request: NextRequest) {
   //   return NextResponse.next();
   // }
 
+  if (pathname.startsWith('/store-management') && role === 'SUPER_ADMIN') {
+    return NextResponse.next();
+  }
+
   return NextResponse.redirect(new URL('/not-found', request.url));
 }
 
 export const config = {
-  matcher: ['/user-profile/:path*'],
+  matcher: ['/user-profile/:path*', '/cart/:path*', '/store-management'],
 };

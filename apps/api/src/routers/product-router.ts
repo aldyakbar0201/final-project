@@ -12,6 +12,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  getCategoriesProduct,
 } from '../controllers/product-controller.js';
 import upload from '../middlewares/upload-middleware.js';
 import { VerifyToken } from '../middlewares/auth-middleware.js';
@@ -20,6 +21,9 @@ const router = express.Router();
 
 // Rute untuk mendapatkan daftar produk dengan pencarian (User Site)
 router.route('/products').get(getProducts);
+
+// Route untuk mendapatkan kategori produk
+router.route('/categories').get(getCategoriesProduct);
 
 // Rute untuk mendapatkan detail produk berdasarkan ID (User Site)
 router.route('/product/:id').get(getProductDetail);

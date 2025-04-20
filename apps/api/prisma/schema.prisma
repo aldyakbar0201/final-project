@@ -139,6 +139,7 @@ model Store {
   Voucher     Voucher[]
   User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   Address     Address       @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
 }
 
 // Tabel Produk
