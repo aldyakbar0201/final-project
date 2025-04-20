@@ -18,6 +18,9 @@ export async function getProducts(
           mode: 'insensitive', // Optional: make the search case-insensitive
         },
       },
+      include: {
+        ProductImage: true,
+      },
     });
 
     res.json(products); // Send the filtered products as a response
