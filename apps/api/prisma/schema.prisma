@@ -52,12 +52,6 @@ enum PaymentMethod {
   Manual
 }
 
-// enum PaymentStatus {
-//   PENDING
-//   PAID
-//   FAILED
-// }
-
 // Tabel User
 model User {
   id             Int       @id @default(autoincrement())
@@ -79,6 +73,7 @@ model User {
   ResetPasswordToken ResetPasswordToken[]
   Address            Address[]
   DiscountReport     DiscountReport[]
+  Store              Store[]
 }
 
 // Tabel ConfirmToken
@@ -114,7 +109,8 @@ model Address {
   latitude   Float
   longitude  Float
 
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Store Store[]
 }
 
 /**
@@ -126,6 +122,7 @@ model Store {
   id          Int      @id @default(autoincrement())
   name        String
   userId      Int
+  addressId   Int
   address     String
   latitude    Float
   longitude   Float
@@ -140,6 +137,8 @@ model Store {
   StockReport StockReport[] // Relasi balik ke StockReport
   Order       Order[]
   Voucher     Voucher[]
+  User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Address     Address       @relation(fields: [addressId], references: [id], onDelete: Cascade)
 }
 
 // Tabel Produk
@@ -148,7 +147,6 @@ model Product {
   name        String   @unique
   description String
   price       Float
-  weight      Float
   categoryId  Int
   storeId     Int
   createdAt   DateTime @default(now())
@@ -284,7 +282,7 @@ model StockReport {
 model Cart {
   id         Int      @id @default(autoincrement())
   userId     Int      @unique
-  totalPrice Int
+  totalPrice Decimal
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -335,7 +333,7 @@ model Order {
   // Relations
   User  User        @relation(fields: [userId], references: [id])
   Store Store       @relation(fields: [storeId], references: [id])
-  OrderItems OrderItem[]
+  Items OrderItem[]
 }
 
 model OrderItem {

@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
+import { CartContext } from '@/context/cart-provider';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Ensures Leaflet styles are loaded
 import { useForm } from 'react-hook-form';
-
-// import { rajaOngkir } from '@/utils/raja-ongkir';
-
-// 1. disini yang masih kurang proses midtrans sama manualnya
-// 2. belum juga implementasi mekanisme untuk voucher dan discount (applyVoucher & applyDiscount)
-// 3. belum ada geocodingnya untuk RajaOnkir
+// import Image from 'next/image';
+import Products from '@/component/for-checkout/product-card';
 
 interface SnapWindow extends Window {
   snap?: { embed: (token: string, options: { embedId: string }) => void };
@@ -44,7 +41,12 @@ export default function Checkout() {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [shippingOptions, setShippingOptions] = useState([]);
-  const { register } = useForm();
+  const { register, watch } = useForm();
+  const paymentType = watch('paymentType');
+  const voucherExistance = watch('voucher');
+  const discountExistance = watch('discount');
+
+  const cart = useContext(CartContext);
 
   const mapRef = useRef<L.Map | null>(null); // Store map instance
   const mapContainerRef = useRef<HTMLDivElement | null>(null); // Store map container
@@ -73,43 +75,12 @@ export default function Checkout() {
         const response = await fetch('http://localhost:8000/api/v1/discounts');
         const data = await response.json();
         setDiscounts(data.discounts);
-        // console.log(data.discounts);
       } catch (error) {
         console.error(error);
       }
     }
 
     getDiscounts();
-  }, []);
-
-  /* -------------------------------------------------------------------------- */
-  /*                                 POST TO DB                                 */
-  /* -------------------------------------------------------------------------- */
-  useEffect(() => {
-    async function postOrders() {
-      try {
-        const response = await fetch('http://localhost:8000/api/v1/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            // Add your order data here
-            // For example:
-            // productId: 1,
-            // quantity: 2,
-            // totalPrice: 200,
-          }),
-        });
-        console.log(response);
-
-        // console.log(data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    postOrders();
   }, []);
 
   /* -------------------------------------------------------------------------- */
@@ -150,8 +121,7 @@ export default function Checkout() {
     // Add event listener for when the marker is moved
     marker.on('dragend', (event) => {
       const marker = event.target;
-      const position = marker.getLatLng();
-      console.log(`Marker moved to: ${position.lat}, ${position.lng}`);
+      marker.getLatLng();
     });
 
     // Get user's current position using browser's geolocation API
@@ -159,7 +129,6 @@ export default function Checkout() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          // console.log(`User location: ${latitude}, ${longitude}`);
 
           // Update map view to user's location with street-level zoom (zoom level 15-18 is good for streets)
           map.setView([latitude, longitude], 17);
@@ -169,7 +138,6 @@ export default function Checkout() {
         },
         (error) => {
           console.error('Error getting user location:', error.message);
-          // console.log('Using default coordinates instead');
         },
         {
           enableHighAccuracy: true, // Request high accuracy results
@@ -204,9 +172,6 @@ export default function Checkout() {
 
         const data = await response.json();
         setShippingOptions(data.data.data);
-        // const data = await rajaOngkir('1000', '55284');
-        // setShippingOptions(data);
-        // console.log(data)
       } catch (error) {
         console.error(error);
       }
@@ -256,107 +221,232 @@ export default function Checkout() {
   }
 
   return (
-    <section className="max-w-md mx-auto bg-white rounded-lg  p-6 my-8">
-      <h2 className="text-2xl font-bold text-lime-600 mb-6 pb-3 border-b border-gray-200">
-        Order Summary
-      </h2>
+    <section className="container mx-auto py-8 px-4">
+      <div className="text-3xl font-bold text-gray-800 mb-6">Checkout</div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-5">
-          {/* Checkout Items */}
-          <div className="flex flex-col py-2">
-            <span className="text-gray-700 font-medium mb-2">Location:</span>
-            {/* Map container using useRef */}
-            <div
-              ref={mapContainerRef}
-              className="w-full h-[300px] rounded-lg  border border-gray-200 overflow-hidden"
-            ></div>
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Left Column - Shipping Address & Map */}
+        <div className="md:w-2/3 bg-white rounded-lg shadow p-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              ALAMAT PENGIRIMAN
+            </h2>
+            <div className="flex items-start gap-2 mb-2">
+              <div className="text-lime-600 mt-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                </svg>
+              </div>
+              <div>
+                <div className="font-medium">Home Address • user</div>
+                <div className="text-gray-600 text-sm">user adress</div>
+              </div>
+            </div>
+            <button className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded text-sm font-medium hover:bg-gray-200 transition-colors">
+              Change
+            </button>
           </div>
 
-          <div className="flex justify-between items-center py-3 border-b border-gray-100">
-            <label className="text-gray-700 font-medium">Delivery:</label>
-            <select
-              {...register('delivery')}
-              className="text-gray-800 hover:text-lime-600 cursor-pointer transition-colors border-2 border-gray-300 rounded-lg p-2 w-40"
-            >
-              <option value="pick delivery" disabled>
-                -- Select a Delivery --
-              </option>
-              {shippingOptions.map(
-                (option: { name: string; cost: number }, index) => (
-                  <option key={index} value={option.name}>
-                    {option.name} - {option.cost}
-                  </option>
-                ),
-              )}
-            </select>
-          </div>
+          <div
+            ref={mapContainerRef}
+            className="w-full h-64 rounded-lg border border-gray-200 overflow-hidden mb-6"
+          ></div>
 
-          {/* ??? */}
-          <div className="flex justify-between items-center py-3 border-b border-gray-100">
-            <label className="text-gray-700 font-medium">Payment:</label>
-            <select
-              {...register('paymentType')}
-              className="border-2 border-gray-300 rounded-lg p-2 w-40"
-            >
-              <option value="Midtrans">Midtrans</option>
-              <option value="Manual">Manual</option>
-            </select>
-          </div>
-
-          <div className="flex justify-between items-center py-3 border-b border-gray-100">
-            <label className="text-gray-700 font-medium">Voucher:</label>
-            <select
-              {...register('voucher')}
-              name="voucher"
-              className="border-2 border-gray-300 rounded-lg p-2 w-40"
-            >
-              <option value="pick voucher" disabled>
-                -- Select a Voucher --
-              </option>
-              {vouchers?.map((voucher: Voucher) => (
-                <option key={voucher.id} value={voucher.code}>
-                  {voucher.code}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-between items-center py-3 border-b border-gray-100">
-            <label className="text-gray-700 font-medium">Discount:</label>
-            <select
-              {...register('discount')}
-              name="discount"
-              className="border-2 border-gray-300 rounded-lg p-2 w-40"
-            >
-              <option value="pick discount" disabled>
-                -- Select a Discount --
-              </option>
-              {discounts?.map((discount: Discount) => (
-                <option key={discount.id} value={discount.code}>
-                  {discount.code}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex justify-between items-center pt-3">
-            <span className="text-gray-800 font-bold text-lg">Total Cost:</span>
-            <span className="text-xl font-bold text-lime-600">$13.97</span>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Products
+            </h2>
+            {/* <div className="flex items-center gap-4 border-b pb-4">
+              <div className="flex-shrink-0">
+                <Image
+                  src="/apple.jpg"
+                  alt="Product"
+                  width={80}
+                  height={80}
+                  className="w-20 h-20 object-cover rounded border"
+                />
+              </div>
+              <div className="flex-grow">
+                <h3 className="font-medium">
+                  TP-Link TL-WA860RE - 300Mbps WiFi Range Extender dengan AC
+                  Passthrough
+                </h3>
+                <div className="text-gray-600 text-sm">1 x Rp307.000</div>
+              </div>
+            </div> */}
+            <Products
+              id={1}
+              name="Sample Product"
+              price={100000}
+              quantity={1}
+              imageUrl="/path/to/image.jpg"
+            />
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full mt-8 bg-lime-600 text-white py-3 rounded-lg font-medium hover:bg-lime-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-opacity-50 "
-        >
-          Proceed to Payment
-        </button>
-      </form>
+        {/* Right Column - Payment Methods & Order Summary */}
+        <div className="md:w-1/3">
+          <form onSubmit={handleSubmit}>
+            <div className="bg-white rounded-lg shadow p-6 mb-4">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                Metode Pembayaran
+              </h2>
 
-      <p className="text-center text-gray-500 text-sm mt-4">
-        Secure payment processed by our trusted partners
-      </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="Midtrans"
+                    {...register('paymentType')}
+                    className="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500"
+                  />
+                  <label className="text-gray-700 cursor-pointer">
+                    Midtrans
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="Manual"
+                    {...register('paymentType')}
+                    className="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500"
+                  />
+                  <label className="text-gray-700 cursor-pointer">
+                    Manual Transfer
+                  </label>
+                </div>
+                {paymentType === 'Manual' && (
+                  <div className="mt-4">
+                    <label className="block text-gray-700 mb-2">
+                      Upload Payment Proof
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="border-2 border-gray-300 rounded-lg p-2 w-full"
+                      placeholder="Proof of Payment"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6 mb-4">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                Other Price
+              </h2>
+              <div className="mt-4">
+                <label className="block text-gray-700 mb-2">Shipping</label>
+                <select
+                  {...register('delivery')}
+                  className="border-2 border-gray-300 rounded-lg p-2 w-full"
+                >
+                  <option value="pick delivery" disabled>
+                    -- Select a Delivery --
+                  </option>
+                  {shippingOptions.map(
+                    (option: { name: string; cost: number }, index) => (
+                      <option key={index} value={option.name}>
+                        {option.name} - {option.cost}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-gray-700 mb-2">Voucher</label>
+                <select
+                  {...register('voucher')}
+                  className="border-2 border-gray-300 rounded-lg p-2 w-full"
+                >
+                  <option value="pick voucher" disabled>
+                    -- Select a Voucher --
+                  </option>
+                  {vouchers?.map((voucher: Voucher) => (
+                    <option key={voucher.id} value={voucher.code}>
+                      {voucher.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-gray-700 mb-2">Discount</label>
+                <select
+                  {...register('discount')}
+                  className="border-2 border-gray-300 rounded-lg p-2 w-full"
+                >
+                  <option value="pick discount" disabled>
+                    -- Select a Discount --
+                  </option>
+                  {discounts?.map((discount: Discount) => (
+                    <option key={discount.id} value={discount.code}>
+                      {discount.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                Ringkasan Belanja
+              </h2>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-700">
+                    Total Harga ({cart?.cartQuantity || 1} barang)
+                  </span>
+                  <span className="text-gray-800 font-medium">price</span>
+                </div>
+
+                {voucherExistance !== 'pick voucher' && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-700">Apply Voucher</span>
+                    <span className="text-gray-800 font-medium">Rp7.500</span>
+                  </div>
+                )}
+
+                {discountExistance !== 'pick discount' && (
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-700">Apply Discount</span>
+                    <span className="text-gray-800 font-medium">Rp1.900</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center py-3">
+                  <span className="text-gray-800 font-bold text-lg">
+                    Total Tagihan
+                  </span>
+                  <span className="text-xl font-bold text-lime-600">
+                    Rp316.400
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-4 bg-lime-600 text-white py-3 rounded-lg font-medium hover:bg-lime-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-opacity-50"
+              >
+                Bayar Sekarang
+              </button>
+
+              <p className="text-center text-gray-500 text-sm mt-4">
+                Dengan melanjutkan, saya setuju dengan syarat & ketentuan yang
+                berlaku
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
     </section>
   );
 }

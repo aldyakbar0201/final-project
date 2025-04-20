@@ -193,7 +193,7 @@ async function createProducts(
       name: 'Fresh Apples',
       description:
         'Crisp and juicy red apples, perfect for snacking or baking.',
-      price: 15000, // IDR price
+      price: 15000, // IDR price // in kilograms
       categoryId: categories[0].id, // Fruits & Vegetables
       storeId: stores[0].id, // Fresh Market
       weight: 1000, // in grams
@@ -207,7 +207,7 @@ async function createProducts(
     {
       name: 'Organic Milk',
       description: 'Fresh organic whole milk from grass-fed cows.',
-      price: 25000, // IDR price
+      price: 25000, // IDR price // in liters
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
       weight: 1000, // in grams
@@ -221,7 +221,7 @@ async function createProducts(
     {
       name: 'Whole Grain Bread',
       description: 'Freshly baked whole grain bread with seeds.',
-      price: 20000, // IDR price
+      price: 20000, // IDR price // in kilograms
       categoryId: categories[3].id, // Bakery
       storeId: stores[0].id, // Fresh Market
       weight: 500, // in grams
@@ -235,7 +235,7 @@ async function createProducts(
     {
       name: 'Free-Range Eggs',
       description: 'Farm fresh free-range eggs, dozen pack.',
-      price: 30000, // IDR price
+      price: 30000, // IDR price // in kilograms
       categoryId: categories[1].id, // Dairy & Eggs
       storeId: stores[1].id, // Organic Grocers
       weight: 600, // in grams
@@ -249,7 +249,7 @@ async function createProducts(
     {
       name: 'Chicken Breast',
       description: 'Boneless, skinless chicken breast, 1 lb pack.',
-      price: 45000, // IDR price
+      price: 45000, // IDR price // in kilograms
       categoryId: categories[2].id, // Meat & Seafood
       storeId: stores[2].id, // Value Supermarket
       weight: 1000, // in grams
@@ -263,7 +263,7 @@ async function createProducts(
     {
       name: 'Sparkling Water',
       description: 'Refreshing sparkling water, 12-pack.',
-      price: 35000, // IDR price
+      price: 35000, // IDR price // in liters
       categoryId: categories[4].id, // Beverages
       storeId: stores[0].id, // Fresh Market
       weight: 12000, // in grams
@@ -277,7 +277,7 @@ async function createProducts(
     {
       name: 'Potato Chips',
       description: 'Crispy potato chips, lightly salted.',
-      price: 12000, // IDR price
+      price: 12000, // IDR price // in kilograms
       categoryId: categories[5].id, // Snacks
       storeId: stores[2].id, // Value Supermarket
       weight: 200, // in grams
@@ -291,7 +291,7 @@ async function createProducts(
     {
       name: 'Canned Tomatoes',
       description: 'Organic diced tomatoes, 14.5 oz can.',
-      price: 10000, // IDR price
+      price: 10000, // IDR  // in kilograms
       categoryId: categories[6].id, // Canned Goods
       storeId: stores[1].id, // Organic Grocers
       weight: 410, // in grams
@@ -305,7 +305,7 @@ async function createProducts(
     {
       name: 'Frozen Pizza',
       description: 'Pepperoni pizza, ready to bake.',
-      price: 50000, // IDR price
+      price: 50000, // IDR price // in kilograms
       categoryId: categories[7].id, // Frozen Foods
       storeId: stores[2].id, // Value Supermarket
       weight: 500, // in grams
@@ -319,7 +319,7 @@ async function createProducts(
     {
       name: 'Laundry Detergent',
       description: 'Concentrated laundry detergent, 50 loads.',
-      price: 60000, // IDR price
+      price: 60000, // IDR price // in kilograms
       categoryId: categories[8].id, // Household
       storeId: stores[0].id, // Fresh Market
       weight: 3000, // in grams
