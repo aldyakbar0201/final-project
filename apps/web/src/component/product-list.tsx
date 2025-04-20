@@ -23,9 +23,6 @@ interface Product {
   price: number;
   categoryId: number;
   storeId: number;
-  ProductImage: {
-    imageUrl: string;
-  }[];
   createdAt: string;
   updatedAt: string;
   ProductImage: ProductImage[];
