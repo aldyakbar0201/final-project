@@ -1,5 +1,6 @@
 'use client';
 
+import CategoriesProduct from '@/component/categories-product';
 import Footer from '@/component/footer';
 import HeroSection from '@/component/hero-section';
 import LocationPrompt from '@/component/location-prompt';
@@ -15,6 +16,7 @@ export default function Home() {
       <LocationProvider>
         <LocationPrompt />
         <ProductList />
+        <CategoriesProduct />
       </LocationProvider>
       <Footer />
     </div>
