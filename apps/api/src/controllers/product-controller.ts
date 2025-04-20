@@ -260,6 +260,21 @@ export async function uploadProductImage(
   }
 }
 
+export async function getCategoriesProduct(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const categories = await prisma.category.findMany();
+
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    next(error);
+  }
+}
+
 // ADMIN SITE
 
 // Fungsi untuk mendapatkan daftar kategori produk (Admin)
