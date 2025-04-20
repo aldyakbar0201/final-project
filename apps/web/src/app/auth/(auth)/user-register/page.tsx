@@ -1,3 +1,4 @@
+// register page
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -55,11 +56,11 @@ export default function Register() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full overflow-hidden rounded-xl">
         <ToastContainer />
         {/* Background Image */}
         <motion.div
-          className="relative w-1/2 h-full"
+          className="relative w-1/2 h-full hidden md:block"
           initial={{ x: '-100%' }}
           animate={{ x: 0 }}
           transition={{ type: 'spring', stiffness: 80, damping: 25 }}
@@ -176,17 +177,7 @@ export default function Register() {
               <span className="text-gray-500">OR</span>
               <div className="border-t border-gray-300 w-full ml-4"></div>
             </div>
-            <form action="/auth/google-login">
-              <motion.button
-                type="submit"
-                className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <FaGoogle className="mr-3" />
-                Continue with Google
-              </motion.button>
-            </form>
+
             {/* Display error message if exists */}
             {fieldErrors.general && (
               <motion.p
@@ -198,6 +189,17 @@ export default function Register() {
                 {fieldErrors.general}
               </motion.p>
             )}
+          </form>
+          <form action="/auth/google-login">
+            <motion.button
+              type="submit"
+              className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <FaGoogle className="mr-3" />
+              Continue with Google
+            </motion.button>
           </form>
           <div className="mt-4 text-center">
             <Link
