@@ -19,7 +19,9 @@ export async function middleware(request: NextRequest) {
   const verifiedToken = await verifyJwtToken(accessToken!);
 
   if (!accessToken || !verifiedToken) {
-    return NextResponse.redirect(new URL('/auth/user-login', request.url));
+    const url = new URL('/auth/user-login', request.url);
+    url.searchParams.set('error', 'unauthorized');
+    return NextResponse.redirect(url);
   }
 
   // return NextResponse.next() --> jika tidak mempunyai role
