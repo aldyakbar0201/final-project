@@ -19,7 +19,11 @@ export async function getProducts(
         },
       },
       include: {
-        ProductImage: true,
+        ProductImage: {
+          select: {
+            imageUrl: true,
+          },
+        },
       },
     });
 
@@ -84,7 +88,8 @@ export async function addToCart(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const { userId, productId, quantity } = req.body;
+  const { productId, quantity } = req.body;
+  const userId = req.user?.id;
 
   try {
     const product = await prisma.product.findUnique({
@@ -170,7 +175,7 @@ export async function createProduct(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const { name, description, price, categoryId, storeId } = req.body;
+  const { name, description, weight, price, categoryId, storeId } = req.body;
 
   try {
     const existingProduct = await prisma.product.findUnique({
@@ -185,7 +190,7 @@ export async function createProduct(
     }
 
     const newProduct = await prisma.product.create({
-      data: { name, description, price, categoryId, storeId },
+      data: { name, description, weight, price, categoryId, storeId },
     });
 
     res.status(201).json(newProduct);

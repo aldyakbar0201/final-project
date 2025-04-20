@@ -1,10 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { CartContext } from '@/context/cart-provider';
 import { FaSearch, FaShoppingCart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { ImageOff } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import the toastify CSS
 import Link from 'next/link';
 
 interface ProductImage {
@@ -20,6 +23,9 @@ interface Product {
   price: number;
   categoryId: number;
   storeId: number;
+  ProductImage: {
+    imageUrl: string;
+  }[];
   createdAt: string;
   updatedAt: string;
   ProductImage: ProductImage[];
@@ -38,6 +44,37 @@ export default function ProductList() {
   const [error, setError] = useState<Error | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const cart = useContext(CartContext);
+
+  const addProductToCart = async (productId: number) => {
+    try {
+      const response = await fetch(
+        'http://localhost:8000/api/v1/product/cart',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: 1,
+          }),
+          credentials: 'include',
+        },
+      );
+      await response.json();
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      } else {
+        cart?.setCartQuantity((prev) => (prev ? prev + 1 : 1));
+        toast.success('Product added to cart successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to add product to cart');
+      console.error('Error adding product to cart:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -105,20 +142,18 @@ export default function ProductList() {
     );
   }
 
-  // Filter products based on search query
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Limit the number of products displayed to 6
   const displayedProducts = showAll
     ? filteredProducts
     : filteredProducts.slice(0, 6);
 
   return (
     <section className="py-12">
-      <div className="container mx-auto px-4">
-        {/* Search Bar */}
+      <ToastContainer position="bottom-right" /> {/* Add ToastContainer here */}
+      <div className="container mx-auto">
         <motion.div
           className="mb-6 relative"
           initial={{ opacity: 0, y: -20 }}
@@ -193,7 +228,10 @@ export default function ProductList() {
                       Rp {product.price.toLocaleString('id-ID')}
                     </p>
                   </div>
-                  <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center w-full">
+                  <button
+                    onClick={() => addProductToCart(product.id)}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center w-full"
+                  >
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                   </button>

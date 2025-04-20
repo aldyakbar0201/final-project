@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/app.error.js';
+import { prisma } from '../configs/prisma.js';
 
 export async function getShippingOptions(
   req: Request,
@@ -9,10 +10,28 @@ export async function getShippingOptions(
   try {
     const courier =
       'jne:sicepat:ide:sap:jnt:ninja:tiki:lion:anteraja:pos:ncs:rex:rpx:sentral:star:wahana:dse';
-    // const { origin, destination, weight } = req.query;
     const origin = req.query.origin as string;
-    const destination = req.query.destination as string;
     const weight = req.query.weight as string;
+
+    // untuk cari userid
+    const id = req.user?.id;
+    const prismaUserId = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        Address: {
+          select: {
+            postalCode: true,
+          },
+        },
+      },
+    });
+    const destination = String(prismaUserId?.Address[0].postalCode);
+
+    if (!prismaUserId?.Address.length) {
+      throw new AppError('No address found for user', 404);
+    }
 
     if (!origin || !destination || !weight) {
       throw new AppError('Missing required parameters', 400);
@@ -28,7 +47,7 @@ export async function getShippingOptions(
         body: new URLSearchParams({
           origin,
           destination,
-          weight: weight,
+          weight,
           courier,
           price: 'lowest',
         }),
@@ -43,5 +62,6 @@ export async function getShippingOptions(
     res.status(200).json({ data });
   } catch (error) {
     next(error);
+    console.error('Error fetching shipping options:', error);
   }
 }

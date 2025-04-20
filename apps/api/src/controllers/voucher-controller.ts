@@ -10,7 +10,7 @@ export const createVoucher = async (req: Request, res: Response) => {
         code,
         type,
         value,
-        storeId: req?.user?.storeId || 1413,
+        storeId: req?.user?.storeId,
         productId: type === 'PRODUCT_SPECIFIC' ? req.body.productId : null,
       },
     });
@@ -33,7 +33,10 @@ export const getVouchers = async (_req: Request, res: Response) => {
 };
 
 // Apply voucher to a product
-export const applyVoucher = async (req: Request, res: Response) => {
+export const applyVoucher = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   const { code, productId } = req.body;
 
   try {
@@ -43,14 +46,16 @@ export const applyVoucher = async (req: Request, res: Response) => {
     });
 
     if (!voucher) {
-      return res.status(404).json({ message: 'Voucher not found' });
+      res.status(404).json({ message: 'Voucher not found' });
+      return;
     }
 
     // Check if the voucher can be used on the product
     if (voucher.productId !== productId) {
-      return res
+      res
         .status(400)
         .json({ message: 'Voucher cannot be used on this product' });
+      return;
     }
 
     // Find the product
@@ -59,7 +64,8 @@ export const applyVoucher = async (req: Request, res: Response) => {
     });
 
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      res.status(404).json({ message: 'Product not found' });
+      return;
     }
 
     // Apply the voucher discount

@@ -431,6 +431,7 @@ async function createCarts(customers: { id: number }[]) {
     .then(() => prisma.cart.findMany());
 }
 
+
 async function createCartItems(
   carts: { id: number }[],
   products: Product[], // Changed type to Product[]

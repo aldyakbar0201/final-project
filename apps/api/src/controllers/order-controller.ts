@@ -7,18 +7,19 @@ import { v4 as uuid } from 'uuid';
 /* -------------------------------------------------------------------------- */
 /*                                FOR CUSTOMER                                */
 /* -------------------------------------------------------------------------- */
-export async function getOrderById(req: Request, res: Response) {
+export async function getOrders(req: Request, res: Response) {
   try {
-    const orders = await prisma.order.findUnique({
+    const userId = req.user?.id || 5;
+
+    const orders = await prisma.order.findMany({
       where: {
-        id: req.params.id,
+        userId,
       },
       include: {
-        Items: {
+        OrderItems: {
           include: {
             Product: {
               select: {
-                id: true,
                 name: true,
                 price: true,
                 ProductImage: {
@@ -100,7 +101,7 @@ export async function createOrderMidtrans(req: Request, res: Response) {
         addressId,
         orderNumber: uuid(),
         orderStatus, // Default status for manual orders
-        paymentMethod: 'MIDTRANS', // Payment method for manual transactions
+        paymentMethod: 'Midtrans', // Payment method for manual transactions
         paymentProof: transaction.redirect_url, // Save the file URL
         paymentProofTime: new Date(),
         paymentDueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Example: 7 days from now
@@ -194,7 +195,7 @@ export async function createOrderManual(
         addressId,
         orderNumber: uuid(),
         orderStatus: orderStatus || 'PENDING', // Default status for manual orders
-        paymentMethod: 'MANUAL', // Payment method for manual transactions
+        paymentMethod: 'Manual', // Payment method for manual transactions
         paymentProof: uploadResult.secure_url, // Save the file URL
         paymentProofTime: new Date(),
         paymentDueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Example: 7 days from now

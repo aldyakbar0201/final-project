@@ -34,9 +34,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith('/cart') && role === 'CUSTOMER') {
-    return NextResponse.next();
-  }
+  // if (pathname.startsWith('/cart') && role === 'CUSTOMER') {
+  //   return NextResponse.next();
+  // }
 
   if (pathname.startsWith('/store-management') && role === 'SUPER_ADMIN') {
     return NextResponse.next();
