@@ -79,7 +79,7 @@ export default function CategoriesProduct() {
       transition={{ duration: 0.5, delay: 0.2 }}
       className="py-12"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <motion.h2
             className="text-2xl font-bold"
@@ -98,7 +98,7 @@ export default function CategoriesProduct() {
         </div>
 
         {/* Use flex-wrap so items wrap on smaller screens */}
-        <div className="flex flex-wrap gap-8 items-center justify-center">
+        <div className="flex flex-wrap gap-8 items-center justify-center mt-12">
           {categories.map((category) => (
             <motion.div
               key={category.id}

@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { notify } from '@/utils/notify-toast'; // Import your custom notify function
 import { ToastContainer } from 'react-toastify';
 import { motion } from 'framer-motion';
@@ -18,6 +18,19 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false); // State for showing/hiding password
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    console.log('Error from query params:', error); // Add this line
+    if (error === 'unauthorized') {
+      notify('You are not authorized. Please log in.', {
+        type: 'error',
+        position: 'top-center',
+        autoClose: 3000,
+      });
+    }
+  }, [searchParams]);
 
   async function handleLogin() {
     try {
@@ -66,8 +79,8 @@ export default function Login() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <ToastContainer />
       <div className="flex w-full overflow-hidden rounded-xl">
-        <ToastContainer />
         <motion.div
           className="w-full md:w-1/2 p-8 my-auto"
           initial={{ x: -50, opacity: 0 }}
