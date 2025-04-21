@@ -9,7 +9,7 @@ import {
   IoHeartOutline,
 } from 'react-icons/io5';
 import Image from 'next/image';
-import { ImageOff } from 'lucide-react'; // If you want fallback when no image
+import { ImageOff } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -23,7 +23,9 @@ interface Product {
 
 export default function ProductDetail() {
   const router = useRouter();
-  const { id } = useParams(); // <-- Get ID from URL
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +34,20 @@ export default function ProductDetail() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:8000/api/v1/product/product/${id}`,
+        console.log('Fetching product ID:', id);
+        const res = await fetch(
+          `http://localhost:8000/api/v1/product/products/${id}`,
         );
-        if (!response.ok) {
-          throw new Error('Failed to fetch product');
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch product (${res.status})`);
         }
-        const data = await response.json();
-        setProduct(data);
+
+        const data = await res.json();
+        const productData = data.data || data;
+        setProduct(productData);
       } catch (err) {
+        console.error('Fetch error:', err);
         setError((err as Error).message);
       } finally {
         setLoading(false);
@@ -61,7 +68,7 @@ export default function ProductDetail() {
 
   if (error || !product) {
     return (
-      <main className="p-4 min-h-screen">
+      <main className="p-4 min-h-screen text-red-500">
         Error: {error || 'Product not found'}
       </main>
     );

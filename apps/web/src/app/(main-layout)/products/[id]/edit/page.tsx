@@ -1,7 +1,8 @@
 'use client';
 
 import type React from 'react';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/component/ui/button';
 import { Input } from '@/component/ui/input';
@@ -15,18 +16,36 @@ import {
 } from '@/component/ui/select';
 import { Label } from '@/component/ui/label';
 import { useToast } from '@/component/ui/use-toast';
-import { createProduct, uploadProductImages } from '@/lib/api';
+import {
+  getProductDetail,
+  updateProduct,
+  uploadProductImages,
+} from '@/lib/api';
 import { useCategories } from '@/app/hooks/use-categories';
 import { useStores } from '@/app/hooks/use.stores';
 import ProductImageUpload from '@/component/product-image-upload';
+import ProductImageGallery from '@/component/product-image-gallery';
+import type { AdminProduct } from '@/lib/types';
 
-export default function CreateProductPage() {
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  categoryId: string;
+  storeId: string;
+}
+
+export default function EditProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const { categories, isLoading: isCategoriesLoading } = useCategories();
   const { stores, isLoading: isStoresLoading } = useStores();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     description: '',
     price: '',
@@ -34,8 +53,41 @@ export default function CreateProductPage() {
     storeId: '',
   });
 
-  const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const product = await getProductDetail(params.id);
+        if (product) {
+          setFormData({
+            name: product.name,
+            description: product.description || '',
+            price: product.price.toString(),
+            categoryId: product.categoryId?.toString() || '',
+            storeId: product.storeId?.toString() || '',
+          });
+          setExistingImages(product.images || []);
+        }
+      } catch (error) {
+        toast({
+          title: 'Error loading product',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Could not load product details',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id, toast]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -49,7 +101,7 @@ export default function CreateProductPage() {
   };
 
   const handleImageChange = (files: File[]) => {
-    setImages(files);
+    setNewImages(files);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,32 +125,37 @@ export default function CreateProductPage() {
         return;
       }
 
-      // Create product (konversi categoryId dan storeId ke number)
-      const productResponse = await createProduct({
+      // Convert string values to numbers for the API
+      const productData: Partial<AdminProduct> = {
         name: formData.name,
         description: formData.description,
         price: Number.parseFloat(formData.price),
-        categoryId: Number(formData.categoryId),
-        storeId: Number(formData.storeId),
-      });
+        categoryId: Number.parseInt(formData.categoryId),
+        storeId: Number.parseInt(formData.storeId),
+      };
 
-      // Upload images if any
-      if (images.length > 0 && productResponse.id) {
-        await uploadProductImages(productResponse.id, images);
+      // Update product
+      await updateProduct(params.id, productData);
+
+      // Upload new images if any
+      if (newImages.length > 0) {
+        await uploadProductImages(params.id, newImages);
       }
 
       toast({
-        title: 'Product created',
-        description: 'The product has been created successfully',
+        title: 'Product updated',
+        description: 'The product has been updated successfully',
       });
 
       router.push('/admin/products');
       router.refresh();
     } catch (error) {
-      console.error('Error creating product:', error);
       toast({
-        title: 'Error creating product',
-        description: 'An error occurred while creating the product',
+        title: 'Error updating product',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An error occurred while updating the product',
         variant: 'destructive',
       });
     } finally {
@@ -106,13 +163,13 @@ export default function CreateProductPage() {
     }
   };
 
-  if (isCategoriesLoading || isStoresLoading) {
+  if (isLoading || isCategoriesLoading || isStoresLoading) {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Create New Product</h1>
+      <h1 className="text-3xl font-bold mb-6">Edit Product</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
         <div className="space-y-2">
@@ -189,7 +246,19 @@ export default function CreateProductPage() {
         </div>
 
         <div className="space-y-2">
-          <Label>Product Images</Label>
+          <Label>Current Images</Label>
+          {existingImages.length > 0 ? (
+            <ProductImageGallery
+              images={existingImages}
+              productId={params.id}
+            />
+          ) : (
+            <p className="text-sm text-gray-500">No images available</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Add New Images</Label>
           <ProductImageUpload onChange={handleImageChange} />
           <p className="text-sm text-gray-500">
             Allowed formats: JPG, JPEG, PNG, GIF. Max size: 1MB per image.
@@ -197,7 +266,7 @@ export default function CreateProductPage() {
         </div>
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating...' : 'Create Product'}
+          {isSubmitting ? 'Updating...' : 'Update Product'}
         </Button>
       </form>
     </div>

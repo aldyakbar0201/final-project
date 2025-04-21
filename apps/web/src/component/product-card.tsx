@@ -1,34 +1,53 @@
+import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart } from 'lucide-react';
+import type { Product } from '@/lib/types';
+import { Badge } from '@/component/ui/badge';
+import AddToCartButton from './add-to-cart-button';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-}
-
-interface ProductCardProps {
-  product: Product;
-}
-
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product }: { product: Product }) {
   return (
-    <div className="border rounded-lg overflow-hidden shadow-md">
-      <Image
-        src={product.image || '/placeholder.svg'}
-        alt={product.name}
-        width={200}
-        height={200}
-        layout="responsive"
-      />
+    <div className="border rounded-lg overflow-hidden group">
+      <Link href={`/products/${product.id}`} className="block">
+        <div className="aspect-square relative overflow-hidden">
+          {product.images && product.images.length > 0 ? (
+            <Image
+              src={product.images[0] || '/placeholder.svg?height=300&width=300'}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <p className="text-gray-400">No image</p>
+            </div>
+          )}
+
+          {product.isOutOfStock && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <Badge variant="destructive" className="text-sm">
+                Out of Stock
+              </Badge>
+            </div>
+          )}
+        </div>
+      </Link>
+
       <div className="p-4">
-        <h3 className="font-bold">{product.name}</h3>
-        <p className="text-gray-600">${product.price.toFixed(2)}</p>
-        <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center w-full">
-          <ShoppingCart className="w-5 h-5 mr-2" />
-          Add to Cart
-        </button>
+        <Link href={`/products/${product.id}`} className="block">
+          <h3 className="font-semibold text-lg mb-1 truncate">
+            {product.name}
+          </h3>
+          <p className="text-gray-500 text-sm mb-2 line-clamp-2">
+            {product.description}
+          </p>
+          <p className="font-bold text-lg mb-3">${product.price}</p>
+        </Link>
+
+        <AddToCartButton
+          productId={product.id}
+          isOutOfStock={product.isOutOfStock}
+          buttonVariant="outline"
+        />
       </div>
     </div>
   );

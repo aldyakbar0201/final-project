@@ -1,54 +1,17 @@
-// app/admin/products/page.tsx
-import React from 'react';
 import Link from 'next/link';
+import { Button } from '@/component/ui/button';
+import AdminProductList from '@/component/admin-product-list';
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  images: string[];
-}
-
-const fetchProducts = async (): Promise<Product[]> => {
-  const res = await fetch('http://localhost:3000/api/products');
-  return res.json();
-};
-
-const handleDelete = async (id: string) => {
-  if (confirm('Are you sure you want to delete this product?')) {
-    const res = await fetch(`/api/products/${id}`, {
-      method: 'DELETE',
-    });
-    if (res.status === 200) {
-      alert('Product deleted successfully!');
-      window.location.reload(); // Reload halaman setelah menghapus
-    } else {
-      alert('Failed to delete product.');
-    }
-  }
-};
-
-const AdminProductsPage = async () => {
-  const products = await fetchProducts();
-
+export default function AdminProductsPage() {
   return (
-    <div>
-      <h1>Product Management</h1>
-      <Link href="/admin/products/create">
-        <button>Create New Product</button>
-      </Link>
-      <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <Link href={`/admin/products/${product.id}`}>
-              {product.name} - ${product.price}
-            </Link>
-            <button onClick={() => handleDelete(product.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Manage Products</h1>
+        <Link href="/admin/products/create">
+          <Button>Add New Product</Button>
+        </Link>
+      </div>
+      <AdminProductList />
     </div>
   );
-};
-
-export default AdminProductsPage;
+}

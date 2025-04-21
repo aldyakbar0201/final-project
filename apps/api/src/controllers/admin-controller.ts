@@ -12,7 +12,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const { genSalt, hash } = bcrypt;
 
 // Login untuk admin
-export async function login(req: Request, res: Response, next: NextFunction) {
+export async function loginAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { email, password } = req.body;
 

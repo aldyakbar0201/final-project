@@ -13,7 +13,7 @@ export default function AdminDashboard() {
       !session ||
       (session.role !== 'super-admin' && session.role !== 'store-admin')
     ) {
-      router.push('/auth/login');
+      router.push('/admin-dashboard');
     }
   }, [router]);
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  login,
+  loginAdmin,
   getAllUsers,
   getUserById,
   createUser,
@@ -19,7 +19,7 @@ const router = express.Router();
 // Semua route dilindungi token
 router.use(VerifyToken);
 
-router.route('/login').post(login);
+router.route('/login').post(loginAdmin);
 
 // Hanya Super Admin yang bisa melihat semua user
 router.get('/users', superAdminMiddleware, getAllUsers);

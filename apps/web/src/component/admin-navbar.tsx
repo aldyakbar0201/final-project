@@ -10,6 +10,7 @@ const adminNavItems = [
   { name: 'Inventory', path: '/admin/inventory' },
   { name: 'Discounts', path: '/admin/discounts' },
   { name: 'Reports', path: '/admin/reports' },
+  { name: 'Store', path: '/admin/store-management' },
 ];
 
 export default function AdminNav() {
