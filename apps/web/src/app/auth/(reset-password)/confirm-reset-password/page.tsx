@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 
-export default function ConfirmResetPassword() {
+function ConfirmResetPasswordContent() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -197,5 +197,13 @@ export default function ConfirmResetPassword() {
         </motion.div>
       </div>
     </motion.div>
+  );
+}
+
+export default function ConfirmResetPassword() {
+  return (
+    <Suspense>
+      <ConfirmResetPasswordContent />
+    </Suspense>
   );
 }

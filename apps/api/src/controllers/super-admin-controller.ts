@@ -24,8 +24,15 @@ export async function createStore(
   next: NextFunction,
 ) {
   try {
-    const { name, address, latitude, longitude, maxDistance, userId } =
-      req.body;
+    const {
+      name,
+      address,
+      postalCode,
+      latitude,
+      longitude,
+      maxDistance,
+      userId,
+    } = req.body;
 
     if (
       !name ||
@@ -33,7 +40,9 @@ export async function createStore(
       latitude === undefined ||
       longitude === undefined ||
       maxDistance === undefined ||
-      userId === undefined
+      userId === undefined ||
+      address === undefined ||
+      postalCode === undefined
     ) {
       res.status(400).json({ message: 'Missing required fields' });
       return;
@@ -43,10 +52,11 @@ export async function createStore(
       data: {
         name,
         address,
+        postalCode,
         latitude,
         longitude,
         maxDistance,
-        userId,
+        userId: Number(userId),
       },
     });
 

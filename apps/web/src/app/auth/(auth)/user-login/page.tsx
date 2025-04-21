@@ -8,6 +8,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaGoogle } from 'react-icons/fa';
+import { signIn } from 'next-auth/react';
 
 export default function Login() {
   const [formLogin, setFormLogin] = useState({
@@ -194,17 +195,16 @@ export default function Login() {
           </form>
 
           {/* Google SignIn Button */}
-          <form action="/auth/google-login">
-            <motion.button
-              type="submit"
-              className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <FaGoogle className="mr-3" />
-              Continue with Google
-            </motion.button>
-          </form>
+          <motion.button
+            onClick={() => signIn('google', { callbackUrl: '/' })}
+            type="button"
+            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FaGoogle className="mr-3" />
+            Continue with Google
+          </motion.button>
 
           {/* Links */}
           <div className="mt-4 text-center flex flex-col gap-2 justify-center">

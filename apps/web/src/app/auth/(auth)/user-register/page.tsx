@@ -8,6 +8,7 @@ import { notify } from '@/utils/notify-toast';
 import { motion } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
 import { FaGoogle } from 'react-icons/fa';
+import { signIn } from 'next-auth/react';
 
 export default function Register() {
   const [formRegister, setFormRegister] = useState({
@@ -190,17 +191,16 @@ export default function Register() {
               </motion.p>
             )}
           </form>
-          <form action="/auth/google-login">
-            <motion.button
-              type="submit"
-              className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <FaGoogle className="mr-3" />
-              Continue with Google
-            </motion.button>
-          </form>
+          <motion.button
+            onClick={() => signIn('google', { callbackUrl: '/' })}
+            type="button"
+            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full flex items-center justify-center"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FaGoogle className="mr-3" />
+            Continue with Google
+          </motion.button>
           <div className="mt-4 text-center">
             <Link
               href="/auth/user-login"
