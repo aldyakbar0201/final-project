@@ -16,7 +16,7 @@ export async function getOrders(req: Request, res: Response) {
         userId,
       },
       include: {
-        OrderItems: {
+        Items: {
           include: {
             Product: {
               select: {

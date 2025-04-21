@@ -10,10 +10,8 @@ export default function UserForm({
 }: UserFormProps) {
   const [name, setName] = useState(initialData?.name ?? '');
   const [email, setEmail] = useState(initialData?.email ?? '');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'store-admin' | 'super-admin'>(
-    initialData?.role ?? 'store-admin',
-  );
+  const [password, setPassword] = useState(initialData?.password ?? '');
+  const [role, setRole] = useState(initialData?.role ?? '');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -22,38 +20,39 @@ export default function UserForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      {!initialData && (
+      <div>
+        <label>Name:</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>Email:</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>Password:</label>
         <input
           type="password"
-          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
-      )}
-      <select
-        value={role}
-        onChange={(e) =>
-          setRole(e.target.value as 'store-admin' | 'super-admin')
-        }
-      >
-        <option value="store-admin">Store Admin</option>
-        <option value="super-admin">Super Admin</option>
-      </select>
+      </div>
+      <div>
+        <label>Role:</label>
+        <input
+          type="text"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        />
+      </div>
+
       <button type="submit">{submitText}</button>
     </form>
   );

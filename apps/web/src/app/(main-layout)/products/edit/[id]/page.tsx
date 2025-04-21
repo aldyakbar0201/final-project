@@ -1,16 +1,17 @@
 // app/admin/products/edit/[id]/page.tsx
+'use client';
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import ProductForm from '../../../../../component/product-form';
 import { SubmitHandler } from 'react-hook-form';
 import { FormValues } from '../../../../../component/product-form';
 
-const EditProductPage = ({ params }: { params: { id: string } }) => {
+const EditProductPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
-  const { id } = params;
 
   const handleSubmit: SubmitHandler<FormValues> = async (values) => {
     // Update data ke API menggunakan Fetch API
+    const id = (await params).id;
     const res = await fetch(`/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

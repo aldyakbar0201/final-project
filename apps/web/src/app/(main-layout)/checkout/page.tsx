@@ -212,9 +212,11 @@ export default function Checkout() {
       });
       const data = await response.json();
 
-      (window as SnapWindow).snap!.embed(data.data.transaction.token, {
-        embedId: 'snap-container',
-      });
+      if (typeof window !== 'undefined') {
+        (window as SnapWindow).snap!.embed(data.data.transaction.token, {
+          embedId: 'snap-container',
+        });
+      }
     } catch (error) {
       console.error(error);
     }

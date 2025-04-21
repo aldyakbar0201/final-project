@@ -109,8 +109,7 @@ model Address {
   latitude   Float
   longitude  Float
 
-  User  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Store Store[]
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /**
@@ -122,8 +121,8 @@ model Store {
   id          Int      @id @default(autoincrement())
   name        String
   userId      Int
-  addressId   Int
   address     String
+  postalCode  Int
   latitude    Float
   longitude   Float
   maxDistance Float
@@ -138,8 +137,6 @@ model Store {
   Order       Order[]
   Voucher     Voucher[]
   User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Address     Address       @relation(fields: [addressId], references: [id], onDelete: Cascade)
-
 }
 
 // Tabel Produk
@@ -148,6 +145,7 @@ model Product {
   name        String   @unique
   description String
   price       Float
+  weight      Float?
   categoryId  Int
   storeId     Int
   createdAt   DateTime @default(now())
@@ -309,11 +307,11 @@ model CartItem {
  * ------------------------------------ ORDER -----------------------------------
  */
 model Order {
-  id               String      @id @default(uuid())
+  id               String        @id @default(uuid())
   userId           Int
   storeId          Int
   addressId        Int
-  orderNumber      String      @unique
+  orderNumber      String        @unique
   orderStatus      OrderStatus
   paymentMethod    PaymentMethod
   // paymentStatus    PaymentStatus
@@ -322,14 +320,14 @@ model Order {
   paymentDueDate   DateTime
   shippingMethod   String
   shippingCost     Float
-  discountTotal    Float       @default(0)
+  discountTotal    Float         @default(0)
   total            Float
   notes            String?
   shippedAt        DateTime?
   deliveredAt      DateTime?
   cancelledAt      DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   // Relations
   User  User        @relation(fields: [userId], references: [id])

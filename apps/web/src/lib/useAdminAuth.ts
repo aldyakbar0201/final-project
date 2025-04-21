@@ -18,10 +18,10 @@ export function useAdminAuth(role?: 'super' | 'store') {
       }
 
       if (role === 'super' && data.role !== 'super') {
-        router.push('/admin'); // Store Admin tidak boleh akses
+        router.push('/admin-dashboard'); // Store Admin tidak boleh akses
       }
     }
 
     checkAuth();
-  }, []);
+  }, [role, router]);
 }
