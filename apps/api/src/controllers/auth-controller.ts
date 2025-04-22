@@ -177,7 +177,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         httpOnly: true,
         sameSite: 'none',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         domain:
           process.env.NODE_ENV === 'production'
             ? 'frshbasket.shop'
