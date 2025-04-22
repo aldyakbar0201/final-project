@@ -33,7 +33,7 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/v1/product/product/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/product/${id}`,
         );
         if (!response.ok) {
           throw new Error('Failed to fetch product');

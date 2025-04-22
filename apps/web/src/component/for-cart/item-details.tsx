@@ -39,7 +39,7 @@ export default function ItemDetails({
   });
 
   async function handlePlus(price: number) {
-    await fetch('http://localhost:8000/api/v1/carts/update', {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/carts/update`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export default function ItemDetails({
 
   async function handleMinus(price: number) {
     if (itemQuantity > 1) {
-      await fetch('http://localhost:8000/api/v1/carts/update', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/carts/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function ItemDetails({
 
   async function handleRemove() {
     if (confirm('Are you sure to delete this product?')) {
-      await fetch('http://localhost:8000/api/v1/carts/remove', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/carts/remove`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

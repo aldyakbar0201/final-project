@@ -17,9 +17,12 @@ export default function UserProfileLayout({
 
   const fetchUserInfo = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/me', {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`,
+        {
+          credentials: 'include',
+        },
+      );
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(

@@ -1,6 +1,6 @@
-// app/admin/products/page.tsx
 import React from 'react';
 import Link from 'next/link';
+import DeleteButton from './_components/delete-product-button'; // import here
 
 interface Product {
   id: string;
@@ -10,22 +10,13 @@ interface Product {
 }
 
 const fetchProducts = async (): Promise<Product[]> => {
-  const res = await fetch('http://localhost:3000/api/products');
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/admin/products`,
+    {
+      cache: 'no-store',
+    },
+  );
   return res.json();
-};
-
-const handleDelete = async (id: string) => {
-  if (confirm('Are you sure you want to delete this product?')) {
-    const res = await fetch(`/api/products/${id}`, {
-      method: 'DELETE',
-    });
-    if (res.status === 200) {
-      alert('Product deleted successfully!');
-      window.location.reload(); // Reload halaman setelah menghapus
-    } else {
-      alert('Failed to delete product.');
-    }
-  }
 };
 
 const AdminProductsPage = async () => {
@@ -39,11 +30,12 @@ const AdminProductsPage = async () => {
       </Link>
       <ul>
         {products.map((product) => (
-          <li key={product.id}>
+          <li key={product.id} className="flex items-center">
             <Link href={`/admin/products/${product.id}`}>
               {product.name} - ${product.price}
             </Link>
-            <button onClick={() => handleDelete(product.id)}>Delete</button>
+            <DeleteButton productId={product.id} />{' '}
+            {/* use Client Component here */}
           </li>
         ))}
       </ul>

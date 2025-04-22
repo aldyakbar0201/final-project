@@ -20,18 +20,21 @@ export default function CreateDiscountPage() {
 
   async function CreateDiscount(data: CreateDiscountFormData) {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/vouchers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vouchers`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: data.code,
+            type: data.type,
+            value: data.value,
+            maxDiscount: data.maxDiscount,
+          }),
         },
-        body: JSON.stringify({
-          code: data.code,
-          type: data.type,
-          value: data.value,
-          maxDiscount: data.maxDiscount,
-        }),
-      });
+      );
 
       await response.json();
       if (response.ok) {

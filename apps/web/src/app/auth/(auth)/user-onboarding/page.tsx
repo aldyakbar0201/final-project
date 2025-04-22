@@ -10,7 +10,7 @@ export default async function Onboarding({
   const token = (await searchParams).token;
   console.log(token);
   const response = await fetch(
-    `http://localhost:8000/api/v1/auth/confirm-email?token=${token}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/confirm-email?token=${token}`,
   );
 
   if (!response.ok) {

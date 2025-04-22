@@ -46,7 +46,7 @@ export default function SidebarUser({
       formData.append('image', file);
 
       const response = await fetch(
-        'http://localhost:8000/api/v1/upload-photo',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload-photo`,
         {
           method: 'POST',
           credentials: 'include',

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { notify } from '@/utils/notify-toast'; // Import your custom notify function
 import { ToastContainer } from 'react-toastify';
@@ -10,6 +10,26 @@ import Image from 'next/image';
 import { FaGoogle } from 'react-icons/fa';
 import { signIn } from 'next-auth/react';
 
+// Component to wrap useSearchParams
+const SearchParamsWrapper = ({
+  setSearchParams,
+}: {
+  setSearchParams: (params: {
+    token: string | null;
+    error: string | null;
+  }) => void;
+}) => {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const error = searchParams.get('error');
+    setSearchParams({ token, error });
+  }, [searchParams, setSearchParams]);
+
+  return null; // This component doesn't render anything, it just handles side effects
+};
+
 export default function Login() {
   const [formLogin, setFormLogin] = useState({
     email: '',
@@ -19,31 +39,35 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false); // State for showing/hiding password
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<{
+    token: string | null;
+    error: string | null;
+  }>({ token: null, error: null });
 
   useEffect(() => {
-    const error = searchParams.get('error');
-    console.log('Error from query params:', error); // Add this line
-    if (error === 'unauthorized') {
+    if (searchParams.error === 'unauthorized') {
       notify('You are not authorized. Please log in.', {
         type: 'error',
         position: 'top-center',
         autoClose: 3000,
       });
     }
-  }, [searchParams]);
+  }, [searchParams.error]);
 
   async function handleLogin() {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formLogin),
+          credentials: 'include',
         },
-        body: JSON.stringify(formLogin),
-        credentials: 'include',
-      });
+      );
       if (response.ok) {
         notify('Login successful', {
           type: 'success',
@@ -96,6 +120,11 @@ export default function Login() {
           >
             Login
           </motion.h2>
+
+          {/* Suspense boundary wrapping the SearchParamsWrapper */}
+          <Suspense fallback={<div>Loading...</div>}>
+            <SearchParamsWrapper setSearchParams={setSearchParams} />
+          </Suspense>
 
           <form
             onSubmit={(e) => {

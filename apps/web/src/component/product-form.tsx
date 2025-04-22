@@ -1,10 +1,11 @@
-// components/ProductForm.tsx
+'use client';
+
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-// Schema validasi menggunakan Zod
+// Schema validation
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   price: z.number().positive('Price must be positive'),
@@ -12,11 +13,11 @@ const schema = z.object({
     .array(z.instanceof(File))
     .refine(
       (files) => files.every((file) => file.size <= 1024 * 1024),
-      'File size must be less than 1MB',
+      'Each file must be ≤ 1MB',
     ),
 });
 
-// Type inference untuk form values
+// Form types
 export type FormValues = z.infer<typeof schema>;
 
 interface ProductFormProps {
@@ -28,6 +29,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
@@ -39,26 +41,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
         <input {...register('name')} />
         {errors.name && <span>{errors.name.message}</span>}
       </div>
+
       <div>
         <label>Price</label>
         <input type="number" {...register('price', { valueAsNumber: true })} />
         {errors.price && <span>{errors.price.message}</span>}
       </div>
+
       <div>
         <label>Images</label>
         <input
           type="file"
           multiple
-          {...register('images')}
           onChange={(e) => {
-            if (e.target.files) {
-              const files = Array.from(e.target.files);
-              console.log(files); // Contoh penggunaan variabel `files`
-            }
+            const files = e.target.files ? Array.from(e.target.files) : [];
+            setValue('images', files, { shouldValidate: true });
           }}
         />
         {errors.images && <span>{errors.images.message}</span>}
       </div>
+
       <button type="submit">Submit</button>
     </form>
   );

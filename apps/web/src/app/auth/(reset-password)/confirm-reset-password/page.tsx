@@ -38,7 +38,7 @@ function ConfirmResetPasswordContent() {
       if (!token) throw new Error('Invalid or missing token.');
 
       const response = await fetch(
-        `http://localhost:8000/api/v1/reset-password`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/reset-password`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

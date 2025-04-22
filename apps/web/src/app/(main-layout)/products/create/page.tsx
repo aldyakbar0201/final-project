@@ -1,4 +1,5 @@
 // app/admin/products/create/page.tsx
+'use client';
 import React from 'react';
 import ProductForm from '../../../../component/product-form';
 import { SubmitHandler } from 'react-hook-form';

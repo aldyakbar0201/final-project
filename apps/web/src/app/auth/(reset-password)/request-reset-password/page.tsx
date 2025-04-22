@@ -20,7 +20,7 @@ export default function RequestResetPassword() {
       setFieldErrors({});
 
       const response = await fetch(
-        'http://localhost:8000/api/v1/reset-password/request-reset-password',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/reset-password/request-reset-password`,
         {
           method: 'POST',
           headers: {

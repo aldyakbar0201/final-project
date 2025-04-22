@@ -11,7 +11,9 @@ export default function DiscountList() {
   const fetchDiscounts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/discounts');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/discounts`,
+      );
       const json = await res.json();
       console.log('DATA DARI BACKEND:', json);
       if (json?.data) {
@@ -31,7 +33,7 @@ export default function DiscountList() {
     if (!confirm('Yakin ingin menghapus diskon ini?')) return;
 
     try {
-      await fetch(`http://localhost:8000/api/v1/discounts/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/discounts/${id}`, {
         method: 'DELETE',
       });
       setDiscounts((prev) => prev.filter((d) => d.id !== id));

@@ -20,7 +20,7 @@ export default function OnboardingResetPassword({
         const token = (await searchParams).token;
         setToken(token);
         const response = await fetch(
-          `http://localhost:8000/api/v1/reset-password/confirm-reset-password?token=${token}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/reset-password/confirm-reset-password?token=${token}`,
         );
         setStatus(response.ok ? 'success' : 'error');
       } catch {
