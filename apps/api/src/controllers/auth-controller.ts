@@ -172,16 +172,14 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       expiresIn: '1d',
     });
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res
       .cookie('accessToken', token, {
         httpOnly: true,
-        sameSite: 'none',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/',
-        secure: true,
-        domain:
-          process.env.NODE_ENV === 'production'
-            ? 'frshbasket.shop'
-            : 'localhost',
         maxAge: 3600000,
       })
       .status(200)
