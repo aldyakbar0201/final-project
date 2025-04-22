@@ -29,9 +29,9 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? 'https://frshbasket.shop'
-        : 'http://localhost:3000',
-    credentials: true,
+        ? 'https://www.frshbasket.shop' // Use the correct production domain here
+        : 'http://localhost:3000', // For localhost
+    credentials: true, // Allow sending credentials (cookies) with requests
   }),
 );
 
