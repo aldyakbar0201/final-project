@@ -5,7 +5,7 @@ export async function loginAdmin(
   try {
     const res = await fetch('http://localhost:8000/api/v1/admin/login', {
       method: 'POST',
-      credentials: 'include', // cookie diterima dari backend
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
