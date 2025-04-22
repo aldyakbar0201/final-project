@@ -16,7 +16,7 @@ export function useAdminAuth(role?: 'super' | 'store') {
       const data = await res.json();
 
       if (!res.ok || !data || !data.role) {
-        router.push('/login');
+        router.push('/admin-dashboard');
         return;
       }
 
