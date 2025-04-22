@@ -242,7 +242,7 @@ export async function sendConfirmationEmail(
     }
 
     const confirmToken = crypto.randomBytes(20).toString('hex');
-    const confirmationLink = `http://localhost:8000/api/v1/auth/confirm-email?token=${confirmToken}`;
+    const confirmationLink = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/confirm-email?token=${confirmToken}`;
 
     await prisma.confirmToken.create({
       data: {
