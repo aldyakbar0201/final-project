@@ -25,7 +25,7 @@ import superAdminRouter from './routers/super-admin-router.js';
 const app: Application = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(cors({ origin: process.env.DOMAIN_WEB, credentials: true })); //origin: frshbasket.shop
+app.use(cors({ origin: true, credentials: true })); //origin: frshbasket.shop
 
 app.use(express.json());
 // app.use(cookieParser()); // Tambahkan sebelum route
