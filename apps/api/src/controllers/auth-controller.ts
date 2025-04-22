@@ -172,15 +172,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       expiresIn: '1d',
     });
 
-    const isProduction = process.env.NODE_ENV === 'production';
-
     res
       .cookie('accessToken', token, {
         httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax',
+        sameSite: 'none', // Ensure SameSite=None for cross-origin cookies
         path: '/',
-        maxAge: 3600000,
+        secure: true, // Ensure the cookie is only sent over HTTPS
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? '.frshbasket.shop' // Allow all subdomains in production
+            : 'localhost', // For localhost
+        maxAge: 3600000, // Cookie expiration (1 hour)
       })
       .status(200)
       .json({ ok: true, message: 'Login success' });
