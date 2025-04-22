@@ -27,7 +27,10 @@ const PORT = process.env.PORT || 8000;
 
 app.use(
   cors({
-    origin: 'https://www.frshbasket.shop',
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? 'https://frshbasket.shop'
+        : 'http://localhost:3000',
     credentials: true,
   }),
 );
