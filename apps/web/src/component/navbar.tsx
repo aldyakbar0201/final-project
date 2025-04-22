@@ -27,7 +27,7 @@ export default function Navbar() {
         if (response.ok) {
           setIsLoggedIn(true);
           const data = await response.json();
-          setUserRole(data.role); // ⬅️ assume API returns { role: 'CUSTOMER' | 'STORE_ADMIN' | 'SUPER_ADMIN' }
+          setUserRole(data.role);
         } else {
           setIsLoggedIn(false);
           setUserRole(null);
