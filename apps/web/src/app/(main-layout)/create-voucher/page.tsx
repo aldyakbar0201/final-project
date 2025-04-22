@@ -64,7 +64,7 @@ export default function CreateVoucherPage() {
     async function fetchProducts() {
       try {
         const response = await fetch(
-          'http://localhost:8000/api/v1/product/products',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/products`,
         );
         const data = await response.json();
         setProducts(data || []);
@@ -92,18 +92,21 @@ export default function CreateVoucherPage() {
 
   async function CreateVoucher(data: CreateVoucherForm) {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/vouchers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vouchers`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: data.code,
+            type: data.type,
+            value: data.value,
+            productId: data.type === 'PRODUCT_SPECIFIC' ? data.productId : null,
+          }),
         },
-        body: JSON.stringify({
-          code: data.code,
-          type: data.type,
-          value: data.value,
-          productId: data.type === 'PRODUCT_SPECIFIC' ? data.productId : null,
-        }),
-      });
+      );
 
       await response.json();
 

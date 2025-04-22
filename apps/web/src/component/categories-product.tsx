@@ -17,7 +17,7 @@ export default function CategoriesProduct() {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          'http://localhost:8000/api/v1/product/categories',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/categories`,
         );
         if (!response.ok) {
           throw new Error('Network response was not ok');

@@ -66,10 +66,13 @@ export default function Order() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/orders', {
-          method: 'GET',
-          credentials: 'include',
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/orders`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          },
+        );
         const data = await response.json();
         setOrder(data[0]);
 

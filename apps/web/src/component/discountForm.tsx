@@ -33,11 +33,14 @@ export default function DiscountForm() {
     };
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/discounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/discounts`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+      );
 
       if (res.ok) {
         setMessage('Diskon berhasil ditambahkan!');

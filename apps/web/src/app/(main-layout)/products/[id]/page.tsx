@@ -10,7 +10,9 @@ interface Product {
 }
 
 const fetchProducts = async (): Promise<Product[]> => {
-  const res = await fetch('http://localhost:3000/api/products');
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/admin/products`,
+  );
   return res.json();
 };
 

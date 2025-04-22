@@ -24,9 +24,12 @@ export default function AddressPage() {
 
   const fetchAddresses = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/address', {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/address`,
+        {
+          credentials: 'include',
+        },
+      );
       if (!response.ok) throw new Error('Failed to fetch addresses');
       const data = await response.json();
       if (data?.data) {
@@ -44,7 +47,7 @@ export default function AddressPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this address?')) return;
     try {
-      await fetch(`http://localhost:8000/api/v1/address/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/address/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -56,10 +59,13 @@ export default function AddressPage() {
 
   const handleSetDefault = async (id: number) => {
     try {
-      await fetch(`http://localhost:8000/api/v1/address/${id}/default`, {
-        method: 'PUT',
-        credentials: 'include',
-      });
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/address/${id}/default`,
+        {
+          method: 'PUT',
+          credentials: 'include',
+        },
+      );
       setAddresses((prev) =>
         prev.map((addr) => ({
           ...addr,
@@ -98,7 +104,7 @@ export default function AddressPage() {
     try {
       if (editMode && selectedAddress) {
         await fetch(
-          `http://localhost:8000/api/v1/address/${selectedAddress.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/address/${selectedAddress.id}`,
           {
             method: 'PUT',
             credentials: 'include',
@@ -107,7 +113,7 @@ export default function AddressPage() {
           },
         );
       } else {
-        await fetch('http://localhost:8000/api/v1/address', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/address`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

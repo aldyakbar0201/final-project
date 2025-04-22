@@ -10,7 +10,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user }) {
       try {
         const response = await fetch(
-          'http://localhost:8000/api/v1/users/lookup',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/lookup`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -23,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!userData || !userData.data) {
           // console.log(1);
           const response = await fetch(
-            'http://localhost:8000/api/v1/auth/register',
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -51,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         const response = await fetch(
-          'http://localhost:8000/api/v1/users/lookup',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/lookup`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -60,8 +60,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
         const userData = await response.json();
         token.role = userData.data.role;
-        // console.log(userData);
-        // console.log(token);
       }
       return token;
     },

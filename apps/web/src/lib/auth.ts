@@ -3,14 +3,17 @@ export async function loginAdmin(
   password: string,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/admin/login', {
-      method: 'POST',
-      credentials: 'include', // cookie diterima dari backend
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/login`,
+      {
+        method: 'POST',
+        credentials: 'include', // cookie diterima dari backend
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       },
-      body: JSON.stringify({ email, password }),
-    });
+    );
 
     if (!res.ok) {
       const errorData = await res.json();

@@ -46,7 +46,7 @@ export default function ProductList() {
   const addProductToCart = async (productId: number) => {
     try {
       const response = await fetch(
-        'http://localhost:8000/api/v1/product/cart',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/cart`,
         {
           method: 'POST',
           headers: {
@@ -77,7 +77,7 @@ export default function ProductList() {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          'http://localhost:8000/api/v1/product/products',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/product/products`,
         );
         if (!response.ok) {
           throw new Error('Network response was not ok');

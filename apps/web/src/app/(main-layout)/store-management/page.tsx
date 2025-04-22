@@ -52,7 +52,7 @@ export default function StoreManagement() {
   const fetchStores = async () => {
     try {
       const res = await fetch(
-        'http://localhost:8000/api/v1/super-admin/stores',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/stores`,
         {
           credentials: 'include',
         },
@@ -66,9 +66,12 @@ export default function StoreManagement() {
 
   const fetchAdmins = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/admin/users', {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users`,
+        {
+          credentials: 'include',
+        },
+      );
 
       if (!res.ok) {
         throw new Error('Failed to fetch admins');
@@ -100,7 +103,7 @@ export default function StoreManagement() {
 
     try {
       const res = await fetch(
-        'http://localhost:8000/api/v1/super-admin/stores',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/stores`,
         {
           method: 'POST',
           credentials: 'include',
@@ -146,7 +149,7 @@ export default function StoreManagement() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v1/super-admin/stores/${editingStoreId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/stores/${editingStoreId}`,
         {
           method: 'PATCH',
           credentials: 'include',
@@ -183,7 +186,7 @@ export default function StoreManagement() {
   const deleteStore = async (id: number) => {
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v1/super-admin/stores/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/stores/${id}`,
         {
           method: 'DELETE',
           credentials: 'include',
@@ -214,7 +217,7 @@ export default function StoreManagement() {
 
     try {
       const res = await fetch(
-        'http://localhost:8000/api/v1/super-admin/assign-store-admin',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/assign-store-admin`,
         {
           method: 'POST',
           credentials: 'include',
@@ -253,10 +256,13 @@ export default function StoreManagement() {
 
   const onLogout = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/logout`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
       if (response.ok) {
         window.location.href = '/';
       } else {
