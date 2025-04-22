@@ -1,5 +1,7 @@
-// app/store-admin/products/page.tsx
-import React from 'react';
+// app/(main-layout)/store-admin/products/page.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
 
 interface Product {
   id: string;
@@ -15,8 +17,17 @@ const fetchProducts = async (): Promise<Product[]> => {
   return res.json();
 };
 
-const StoreAdminProductsPage = async () => {
-  const products = await fetchProducts();
+const StoreAdminProductsPage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      const productsData = await fetchProducts();
+      setProducts(productsData);
+    };
+
+    loadProducts();
+  }, []);
 
   return (
     <div>
