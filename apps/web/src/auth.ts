@@ -94,13 +94,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       name: 'accessToken',
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain:
-          process.env.NODE_ENV === 'production'
-            ? 'frshbasket.shop'
-            : 'localhost',
       },
     },
   },
