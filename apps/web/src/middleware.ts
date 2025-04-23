@@ -17,7 +17,8 @@ async function verifyJwtToken(token: string) {
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
   const verifiedToken = await verifyJwtToken(accessToken!);
-
+  console.error(verifiedToken);
+  console.error(accessToken);
   if (!accessToken || !verifiedToken) {
     const url = new URL('/auth/user-login', request.url);
     url.searchParams.set('error', 'unauthorized');
