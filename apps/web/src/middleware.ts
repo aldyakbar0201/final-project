@@ -15,6 +15,7 @@ async function verifyJwtToken(token: string) {
 }
 
 export async function middleware(request: NextRequest) {
+  return NextResponse.next();
   const accessToken = request.cookies.get('accessToken')?.value;
   const verifiedToken = await verifyJwtToken(accessToken!);
   console.error(verifiedToken);
@@ -28,22 +29,22 @@ export async function middleware(request: NextRequest) {
   // return NextResponse.next() --> jika tidak mempunyai role
 
   // const pathname = request.nextUrl.pathname;
-  const { pathname } = request.nextUrl;
-  const role = verifiedToken.role;
+  // const { pathname } = request.nextUrl;
+  // const role = verifiedToken.role;
 
-  if (pathname.startsWith('/user-profile') && role === 'CUSTOMER') {
-    return NextResponse.next();
-  }
-
-  // if (pathname.startsWith('/cart') && role === 'CUSTOMER') {
+  // if (pathname.startsWith('/user-profile') && role === 'CUSTOMER') {
   //   return NextResponse.next();
   // }
 
-  if (pathname.startsWith('/store-management') && role === 'SUPER_ADMIN') {
-    return NextResponse.next();
-  }
+  // // if (pathname.startsWith('/cart') && role === 'CUSTOMER') {
+  // //   return NextResponse.next();
+  // // }
 
-  return NextResponse.redirect(new URL('/not-found', request.url));
+  // if (pathname.startsWith('/store-management') && role === 'SUPER_ADMIN') {
+  //   return NextResponse.next();
+  // }
+
+  // return NextResponse.redirect(new URL('/not-found', request.url));
 }
 
 export const config = {
