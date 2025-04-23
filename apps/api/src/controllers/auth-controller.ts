@@ -177,12 +177,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         httpOnly: true,
         sameSite: 'none', // Ensure SameSite=None for cross-origin cookies
         path: '/',
-        secure: true, // Ensure the cookie is only sent over HTTPS
-        domain:
-          process.env.NODE_ENV === 'production'
-            ? '.frshbasket.shop' // Allow all subdomains in production
-            : 'localhost', // For localhost
-        maxAge: 3600000, // Cookie expiration (1 hour)
+        secure: process.env.NODE_ENV === 'production', // Ensure the cookie is only sent over HTTPS
+        maxAge: 1000 * 60 * 60 * 60 * 24,
       })
       .status(200)
       .json({ ok: true, message: 'Login success' });
